@@ -1,0 +1,311 @@
+.hero {
+  position: relative;
+  display: flex;
+  width: 100%;
+  min-height: 100svh;
+  overflow: hidden;
+  background: var(--void);
+  isolation: isolate; /* own stacking context for the z-scale */
+}
+
+/* ---- Background: cinematic still + slow Ken Burns drift ---- */
+.bg {
+  position: absolute;
+  inset: 0;
+  z-index: var(--z-base);
+  background: var(--void); /* no flash before the image paints */
+}
+
+.bgImg {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: 50% 28%;
+  filter: saturate(0.92) brightness(0.82) contrast(1.04);
+  will-change: transform;
+  animation: kenburns 28s ease-in-out infinite alternate;
+}
+
+@keyframes kenburns {
+  from {
+    transform: scale(1.02) translate3d(0, 0, 0);
+  }
+  to {
+    transform: scale(1.12) translate3d(-1.5%, -1.5%, 0);
+  }
+}
+
+/* ---- Scrim: keep the lower-left text zone at ~void so cream stays AA ---- */
+.scrim {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+  background:
+    linear-gradient(
+      to top,
+      var(--void) 0%,
+      rgba(10, 14, 13, 0.88) 24%,
+      rgba(10, 14, 13, 0.42) 58%,
+      rgba(10, 14, 13, 0.6) 100%
+    ),
+    linear-gradient(
+      to right,
+      rgba(10, 14, 13, 0.86) 0%,
+      rgba(10, 14, 13, 0.34) 46%,
+      rgba(10, 14, 13, 0.12) 100%
+    );
+}
+
+/* ---- Film grain ---- */
+.grain {
+  position: absolute;
+  inset: 0;
+  z-index: var(--z-grain);
+  pointer-events: none;
+  opacity: 0.22;
+  mix-blend-mode: overlay;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  background-size: 140px 140px;
+}
+
+/* ---- Content ---- */
+.content {
+  position: relative;
+  z-index: var(--z-content);
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: clamp(2.5rem, 8vh, 5rem);
+  width: 100%;
+  max-width: 1480px;
+  min-height: 100svh;
+  margin: 0 auto;
+  padding: clamp(1.5rem, 4vh, 2.75rem) clamp(1.5rem, 5vw, 5rem)
+    clamp(2rem, 5vh, 3.5rem);
+}
+
+/* Top: film-credit chrome (NOT a section eyebrow) */
+.credit {
+  font-family: var(--font-mono), monospace;
+  font-size: 0.72rem;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  line-height: 1.9;
+  color: var(--mist);
+}
+.creditMark {
+  display: block;
+  color: var(--cream);
+}
+
+/* Bottom cluster */
+.bottom {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: clamp(1.5rem, 4vw, 3rem);
+}
+
+.lower {
+  max-width: 62rem;
+}
+
+.headline {
+  margin: 0 0 clamp(1.25rem, 2.4vw, 1.85rem);
+  max-width: 18ch;
+  font-family: var(--font-display), sans-serif;
+  font-weight: 700;
+  font-size: clamp(2.75rem, 8vw, 7.5rem);
+  line-height: 0.95;
+  letter-spacing: -0.03em;
+  color: var(--cream);
+  text-wrap: balance;
+}
+
+.word {
+  display: inline-block;
+  overflow: hidden;
+  vertical-align: top;
+  /* room so descenders (p, g) aren't clipped by the reveal mask */
+  padding-bottom: 0.14em;
+  margin-bottom: -0.14em;
+}
+.inner {
+  display: inline-block;
+  will-change: transform;
+}
+.accent {
+  color: var(--emerald);
+}
+
+.sub {
+  margin: 0 0 clamp(1.85rem, 3vw, 2.6rem);
+  max-width: 46ch;
+  font-family: var(--font-sans), system-ui, sans-serif;
+  font-size: clamp(1rem, 1.35vw, 1.2rem);
+  line-height: 1.6;
+  color: var(--mist);
+  text-wrap: pretty;
+}
+
+.ctas {
+  display: flex;
+  flex-wrap: wrap;
+  gap: clamp(0.75rem, 1.4vw, 1rem);
+}
+
+.btnPrimary,
+.btnGhost {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.55rem;
+  font-family: var(--font-sans), system-ui, sans-serif;
+  font-weight: 600;
+  font-size: 0.95rem;
+  border-radius: 2px;
+  text-decoration: none;
+  cursor: pointer;
+  transition: background var(--dur-state) var(--ease-out-quart),
+    color var(--dur-state) var(--ease-out-quart),
+    border-color var(--dur-state) var(--ease-out-quart),
+    transform var(--dur-state) var(--ease-out-quart),
+    box-shadow var(--dur-state) var(--ease-out-quart);
+}
+
+.btnPrimary {
+  padding: 16px 32px;
+  background: var(--emerald);
+  color: var(--void);
+  border: 1px solid var(--emerald);
+}
+.btnPrimary:hover {
+  background: var(--emerald-deep);
+  border-color: var(--emerald-deep);
+  transform: translateY(-2px);
+  box-shadow: 0 0 40px -8px rgba(37, 158, 143, 0.45);
+}
+.btnPrimary:focus-visible {
+  outline: 2px solid var(--cream);
+  outline-offset: 3px;
+}
+
+.btnGhost {
+  padding: 16px 28px;
+  background: transparent;
+  color: var(--cream);
+  border: 1px solid var(--hairline);
+}
+.btnGhost:hover {
+  background: var(--cream);
+  color: var(--void);
+  border-color: var(--cream);
+}
+.btnGhost:focus-visible {
+  outline: 2px solid var(--emerald);
+  outline-offset: 3px;
+}
+
+.btnIcon {
+  width: 0.85em;
+  height: 0.85em;
+  fill: currentColor;
+}
+
+/* Scroll cue */
+.cue {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.85rem;
+  flex-shrink: 0;
+  padding: 0.5rem;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  color: var(--mist);
+  font-family: var(--font-mono), monospace;
+  font-size: 0.62rem;
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
+  transition: color var(--dur-state) var(--ease-out-quart);
+}
+.cue:hover {
+  color: var(--cream);
+}
+.cue:focus-visible {
+  outline: 2px solid var(--emerald);
+  outline-offset: 4px;
+}
+.cueTrack {
+  position: relative;
+  width: 1px;
+  height: 52px;
+  overflow: hidden;
+  background: var(--hairline);
+}
+.cueBeam {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 1px;
+  height: 16px;
+  background: var(--emerald);
+  animation: beam 1.7s var(--ease-out-quart) infinite alternate;
+}
+
+@keyframes beam {
+  from {
+    transform: translateY(0);
+  }
+  to {
+    transform: translateY(36px); /* track 52 − beam 16 */
+  }
+}
+
+@media (max-width: 760px) {
+  .bottom {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: clamp(2.25rem, 7vh, 3rem);
+  }
+  .cue {
+    flex-direction: row;
+    align-self: flex-start;
+    gap: 0.85rem;
+  }
+  .cueTrack {
+    width: 40px;
+    height: 1px;
+  }
+  .cueBeam {
+    width: 14px;
+    height: 1px;
+    animation-name: beamX;
+  }
+  @keyframes beamX {
+    from {
+      transform: translateX(0);
+    }
+    to {
+      transform: translateX(26px); /* track 40 − beam 14 */
+    }
+  }
+}
+
+@media (max-width: 480px) {
+  .headline {
+    font-size: clamp(2.3rem, 12.5vw, 3.25rem);
+  }
+}
+
+/* Static fallback — no Ken Burns under reduced motion (JS handles the rest) */
+@media (prefers-reduced-motion: reduce) {
+  .bgImg {
+    animation: none;
+    transform: scale(1.04);
+  }
+  .cueBeam {
+    animation: none;
+  }
+}

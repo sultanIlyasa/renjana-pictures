@@ -1,0 +1,148 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-06-10T00:00:00Z",
+  "title": "Design System: Renjana Pictures",
+  "extensions": {
+    "colorMeta": {
+      "emerald-signal": {
+        "role": "primary",
+        "displayName": "Emerald Signal",
+        "canonical": "oklch(0.63 0.097 178)",
+        "tonalRamp": ["#06201D", "#0C332E", "#13534B", "#1B7A6E", "#229184", "#259E8F", "#5FBBB0", "#A9DBD4"]
+      },
+      "cream-light": {
+        "role": "secondary",
+        "displayName": "Cream Light",
+        "canonical": "oklch(0.97 0.034 96)",
+        "tonalRamp": ["#3D3A28", "#5C5840", "#857F5E", "#B0A982", "#D8CFA8", "#FDF5D7", "#FEF9E8", "#FFFCF4"]
+      },
+      "void": {
+        "role": "neutral",
+        "displayName": "Void",
+        "canonical": "oklch(0.17 0.008 180)",
+        "tonalRamp": ["#0A0E0D", "#121614", "#1A201E", "#252B29", "#3A423F", "#5A635F", "#8E9A95", "#C2C9C5"]
+      },
+      "surface": {
+        "role": "neutral",
+        "displayName": "Surface",
+        "canonical": "oklch(0.22 0.010 175)",
+        "tonalRamp": ["#0A0E0D", "#121614", "#1A201E", "#252B29", "#3A423F", "#5A635F", "#8E9A95", "#C2C9C5"]
+      },
+      "mist": {
+        "role": "neutral",
+        "displayName": "Mist",
+        "canonical": "oklch(0.66 0.012 175)",
+        "tonalRamp": ["#1A201E", "#252B29", "#3A423F", "#5A635F", "#727C78", "#8E9A95", "#B2BAB6", "#D6DAD8"]
+      }
+    },
+    "typographyMeta": {
+      "display": { "displayName": "Display", "purpose": "Hero and one-line section statements only. Big, tight, rare — one per section." },
+      "headline": { "displayName": "Headline", "purpose": "Section openers and the closing contact line." },
+      "title": { "displayName": "Title", "purpose": "Card headings, stat labels, panel titles." },
+      "body": { "displayName": "Body", "purpose": "Marketing prose, capped 65–75ch. Cream primary, Mist supporting." },
+      "label": { "displayName": "Label (Mono)", "purpose": "Cinematic credit/timecode chrome. Never a section eyebrow." }
+    },
+    "shadows": [
+      { "name": "emerald-glow", "value": "0 0 40px -8px rgba(37,158,143,0.35)", "purpose": "Halo under the primary CTA or active media frame so the accent reads as a light source. Max once per viewport." },
+      { "name": "frame-lift", "value": "0 24px 80px -24px rgba(0,0,0,0.7)", "purpose": "Diffuse separation for a pinned media element or contact panel against the void. Never tight." }
+    ],
+    "motion": [
+      { "name": "ease-out-quart", "value": "cubic-bezier(0.25, 1, 0.5, 1)", "purpose": "Default exponential ease-out for reveals and state transitions. No bounce, no elastic." },
+      { "name": "ease-power3", "value": "cubic-bezier(0.215, 0.61, 0.355, 1)", "purpose": "GSAP power3-equivalent for orchestrated scroll entrances and the hero word stagger." },
+      { "name": "duration-state", "value": "200ms", "purpose": "Hover/focus state changes on buttons, links, inputs." },
+      { "name": "scrub-smoothing", "value": "1", "purpose": "ScrollTrigger scrub value — 1s catch-up smoothing on the media stage and horizontal pan." }
+    ],
+    "breakpoints": [
+      { "name": "sm", "value": "640px" },
+      { "name": "md", "value": "768px" },
+      { "name": "lg", "value": "1024px" },
+      { "name": "xl", "value": "1280px" }
+    ]
+  },
+  "components": [
+    {
+      "name": "Primary Button",
+      "kind": "button",
+      "refersTo": "button-primary",
+      "description": "The single brightest interactive element on its screen — primary CTA fill.",
+      "html": "<button class=\"ds-btn-primary\">Start a project</button>",
+      "css": ".ds-btn-primary { background: #259E8F; color: #0A0E0D; font-family: 'Geist Sans', system-ui, sans-serif; font-weight: 600; font-size: 1rem; padding: 18px 36px; border: none; border-radius: 2px; cursor: pointer; transition: background 200ms cubic-bezier(0.25,1,0.5,1), transform 200ms cubic-bezier(0.25,1,0.5,1), box-shadow 200ms cubic-bezier(0.25,1,0.5,1); } .ds-btn-primary:hover { background: #1B7A6E; transform: translateY(-2px); box-shadow: 0 0 40px -8px rgba(37,158,143,0.35); } .ds-btn-primary:focus-visible { outline: 2px solid #FDF5D7; outline-offset: 3px; }"
+    },
+    {
+      "name": "Ghost Button",
+      "kind": "button",
+      "refersTo": "button-ghost",
+      "description": "Second-tier action. Transparent with hairline border; inverts to cream fill on hover.",
+      "html": "<button class=\"ds-btn-ghost\">View the reel</button>",
+      "css": ".ds-btn-ghost { background: transparent; color: #FDF5D7; font-family: 'Geist Sans', system-ui, sans-serif; font-weight: 600; font-size: 1rem; padding: 18px 36px; border: 1px solid #252B29; border-radius: 2px; cursor: pointer; transition: background 200ms cubic-bezier(0.25,1,0.5,1), color 200ms cubic-bezier(0.25,1,0.5,1), border-color 200ms cubic-bezier(0.25,1,0.5,1); } .ds-btn-ghost:hover { background: #FDF5D7; color: #0A0E0D; border-color: #FDF5D7; } .ds-btn-ghost:focus-visible { outline: 2px solid #259E8F; outline-offset: 3px; }"
+    },
+    {
+      "name": "Underline Input",
+      "kind": "input",
+      "refersTo": "input",
+      "description": "Editorial underline field — no box, hairline bottom border, emerald on focus.",
+      "html": "<div class=\"ds-field\"><input class=\"ds-input\" type=\"email\" placeholder=\"you@studio.com\" aria-label=\"Email\" /></div>",
+      "css": ".ds-field { position: relative; } .ds-input { width: 100%; background: transparent; color: #FDF5D7; font-family: 'Geist Sans', system-ui, sans-serif; font-size: 1.0625rem; padding: 16px 0; border: none; border-bottom: 1px solid #252B29; border-radius: 0; outline: none; transition: border-color 200ms cubic-bezier(0.25,1,0.5,1); } .ds-input::placeholder { color: #8E9A95; } .ds-input:focus { border-bottom: 2px solid #259E8F; }"
+    },
+    {
+      "name": "Service Card",
+      "kind": "card",
+      "refersTo": "card",
+      "description": "Raised surface on the void. Used sparingly — the 3 service props, news items. Never nested.",
+      "html": "<article class=\"ds-card\"><span class=\"ds-card-label\">01 · PERFORMANCE</span><h3 class=\"ds-card-title\">Built for speed</h3><p class=\"ds-card-body\">Frame-perfect delivery that loads before the eye settles — every asset tuned for the cut.</p></article>",
+      "css": ".ds-card { background: #121614; color: #FDF5D7; border: 1px solid #252B29; border-radius: 4px; padding: 40px; transition: background 200ms cubic-bezier(0.25,1,0.5,1); } .ds-card:hover { background: #1A201E; } .ds-card-label { display: block; font-family: 'Geist Mono', ui-monospace, monospace; font-size: 0.75rem; font-weight: 500; letter-spacing: 0.12em; text-transform: uppercase; color: #259E8F; margin-bottom: 24px; } .ds-card-title { font-family: 'Bricolage Grotesque', 'Geist Sans', sans-serif; font-weight: 600; font-size: 1.75rem; line-height: 1.2; letter-spacing: -0.01em; margin: 0 0 12px; } .ds-card-body { font-family: 'Geist Sans', system-ui, sans-serif; font-size: 1.0625rem; line-height: 1.6; color: #8E9A95; margin: 0; max-width: 36ch; }"
+    },
+    {
+      "name": "Top Navigation",
+      "kind": "nav",
+      "refersTo": "nav",
+      "description": "Minimal transparent bar over the hero — cream wordmark, sparse mono links with growing emerald underline.",
+      "html": "<nav class=\"ds-nav\"><a class=\"ds-nav-mark\" href=\"#\">RENJANA</a><div class=\"ds-nav-links\"><a class=\"ds-nav-link\" href=\"#work\">Work</a><a class=\"ds-nav-link\" href=\"#services\">Services</a><a class=\"ds-nav-link\" href=\"#contact\">Contact</a></div></nav>",
+      "css": ".ds-nav { display: flex; align-items: center; justify-content: space-between; padding: 24px 40px; background: transparent; } .ds-nav-mark { font-family: 'Bricolage Grotesque', 'Geist Sans', sans-serif; font-weight: 700; font-size: 1.25rem; letter-spacing: -0.02em; color: #FDF5D7; text-decoration: none; } .ds-nav-links { display: flex; gap: 32px; } .ds-nav-link { position: relative; font-family: 'Geist Mono', ui-monospace, monospace; font-size: 0.75rem; font-weight: 500; letter-spacing: 0.12em; text-transform: uppercase; color: #8E9A95; text-decoration: none; padding-bottom: 4px; transition: color 200ms cubic-bezier(0.25,1,0.5,1); } .ds-nav-link::after { content: ''; position: absolute; left: 0; bottom: 0; width: 0; height: 1px; background: #259E8F; transition: width 200ms cubic-bezier(0.25,1,0.5,1); } .ds-nav-link:hover { color: #FDF5D7; } .ds-nav-link:hover::after { width: 100%; }"
+    },
+    {
+      "name": "Scroll Caption",
+      "kind": "custom",
+      "refersTo": "label",
+      "description": "Mono milestone caption overlaid on the scroll-scrubbed media stage; fades in/out at scroll progress.",
+      "html": "<span class=\"ds-caption\"><span class=\"ds-caption-num\">02</span> Designed for impact</span>",
+      "css": ".ds-caption { display: inline-flex; align-items: baseline; gap: 16px; font-family: 'Geist Mono', ui-monospace, monospace; font-size: 0.75rem; font-weight: 500; letter-spacing: 0.12em; text-transform: uppercase; color: #FDF5D7; } .ds-caption-num { color: #259E8F; }"
+    }
+  ],
+  "narrative": {
+    "northStar": "The Darkened Screening Room",
+    "overview": "A void-dark editorial canvas where the footage, the frame, and a single emerald signal are the only sources of light. Restraint is the luxury; each section breathes for a full viewport or more, and motion is directed (a few orchestrated GSAP moments) rather than decorative. The page should feel like an Apple keynote shot at night: cinematic, confident, expensive. It rejects corporate stock-agency tropes, generic SaaS/startup scaffolding, and anything cheap or amateur. Warmth lives in the cream type and emerald accent, never in a tinted surface — there is no near-white surface in this system.",
+    "keyCharacteristics": [
+      "Void-dark canvas; the work is the only thing that glows.",
+      "Near-monochrome with exactly one sharp accent (emerald).",
+      "Generous, cinematic negative space — sections sized in viewports.",
+      "Huge confident display type, tight tracking, sparingly used.",
+      "Directed motion: few orchestrated scroll moments, never jittery."
+    ],
+    "rules": [
+      { "name": "The One Signal Rule", "body": "Emerald covers ≤10% of any viewport. It is a signal, not a paint. If a section has two emerald elements competing, one of them is wrong.", "section": "colors" },
+      { "name": "The No Near-White Rule", "body": "There is no light surface in this system. Backgrounds are void/surface dark; warmth is carried by cream type and emerald, never by a cream-tinted background. A beige/sand/parchment panel is an instant tell and is forbidden.", "section": "colors" },
+      { "name": "The Credit-Line Rule", "body": "The uppercase mono label is film-credit chrome, not a section eyebrow. Legitimate as a timecode, scroll-milestone caption, or footer credit; forbidden as a tracked kicker stacked above every heading.", "section": "typography" },
+      { "name": "The Big-and-Rare Rule", "body": "Display type earns its 120px by being scarce. One display moment per section, maximum.", "section": "typography" },
+      { "name": "The Lit-From-Within Rule", "body": "Surfaces don't sit above the canvas, they glow within it. If you reach for a hard drop shadow to fake depth, the answer is more negative space or a step in tone instead.", "section": "elevation" }
+    ],
+    "dos": [
+      "Do keep the canvas void-dark (#0A0E0D) and let the footage be the only light in the room.",
+      "Do ration the emerald — ≤10% of any viewport, signal not paint (The One Signal Rule).",
+      "Do size sections in viewports; let each one breathe for a full screen or more.",
+      "Do set display type big, tight (-0.03em), and rare — one display moment per section.",
+      "Do orchestrate a few directed GSAP moments (pinned hero, scroll-scrubbed stage, one horizontal pan) with power2/power3 easing.",
+      "Do ship a clean static fallback for every animation under prefers-reduced-motion, and keep body/placeholder text ≥4.5:1 (WCAG AA)."
+    ],
+    "donts": [
+      "Don't introduce any near-white / cream / sand / parchment background panel — there is no light surface in this system (The No Near-White Rule).",
+      "Don't use purple-gradient-on-white SaaS slop, gradient blobs, gradient text, or glassmorphism-as-default.",
+      "Don't stack a tiny uppercase tracked eyebrow above every section — the mono label is film-credit chrome, not a kicker (The Credit-Line Rule).",
+      "Don't build identical icon-heading-text feature-card grids, hero-metric blocks, or any AI-default landing scaffold.",
+      "Don't lean on corporate stock photography, smiling-handshake imagery, or corporate-blue — this is a creative house, not a vendor.",
+      "Don't fake depth with hard drop shadows on the dark canvas; use tone and negative space (The Lit-From-Within Rule).",
+      "Don't scatter jittery micro-animations or autoplay chaos that buries the work; motion is directed, not ambient.",
+      "Don't round corners into pills/rounded-xl — the system is near-sharp and editorial (2–4px)."
+    ]
+  }
+}

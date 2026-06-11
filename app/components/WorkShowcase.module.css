@@ -1,0 +1,359 @@
+.work {
+  position: relative;
+  width: 100%;
+  background: var(--void);
+  padding-block: clamp(5rem, 13vh, 9rem);
+  overflow: hidden;
+}
+
+.inner {
+  width: 100%;
+  max-width: 1480px;
+  margin: 0 auto;
+  padding-inline: clamp(1.5rem, 5vw, 5rem);
+}
+
+/* ---- Header ---- */
+.head {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 2rem;
+  margin-bottom: clamp(2rem, 4vw, 3.25rem);
+}
+.kicker {
+  display: block;
+  margin-bottom: 1rem;
+  font-family: var(--font-mono), monospace;
+  font-size: 0.72rem;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--emerald);
+}
+.title {
+  margin: 0;
+  max-width: 16ch;
+  font-family: var(--font-display), sans-serif;
+  font-weight: 700;
+  font-size: clamp(2rem, 5vw, 3.5rem);
+  line-height: 0.98;
+  letter-spacing: -0.025em;
+  color: var(--cream);
+  text-wrap: balance;
+}
+.lead {
+  margin: 1.1rem 0 0;
+  max-width: 42ch;
+  font-size: clamp(1rem, 1.3vw, 1.15rem);
+  line-height: 1.6;
+  color: var(--mist);
+  text-wrap: pretty;
+}
+
+/* ---- Arrow controls ---- */
+.controls {
+  display: flex;
+  gap: 0.6rem;
+  flex-shrink: 0;
+}
+.arrow {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 48px;
+  height: 48px;
+  border: 1px solid var(--hairline);
+  border-radius: 9999px;
+  background: transparent;
+  color: var(--cream);
+  cursor: pointer;
+  transition: background var(--dur-state) var(--ease-out-quart),
+    color var(--dur-state) var(--ease-out-quart),
+    border-color var(--dur-state) var(--ease-out-quart),
+    opacity var(--dur-state) var(--ease-out-quart);
+}
+.arrow:hover:not(:disabled) {
+  background: var(--cream);
+  color: var(--void);
+  border-color: var(--cream);
+}
+.arrow:focus-visible {
+  outline: 2px solid var(--emerald);
+  outline-offset: 3px;
+}
+.arrow:disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
+}
+.arrowIcon {
+  width: 18px;
+  height: 18px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.6;
+}
+
+/* ---- Track ---- */
+.track {
+  display: flex;
+  gap: clamp(1rem, 2vw, 1.75rem);
+  /* break the centered container so cards bleed to the right edge */
+  margin-inline: calc(-1 * clamp(1.5rem, 5vw, 5rem));
+  padding-inline: clamp(1.5rem, 5vw, 5rem);
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  scroll-padding-left: clamp(1.5rem, 5vw, 5rem);
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+  cursor: grab;
+}
+.track::-webkit-scrollbar {
+  display: none;
+}
+.track.dragging {
+  cursor: grabbing;
+  scroll-snap-type: none;
+  user-select: none;
+}
+
+/* ---- Card ---- */
+.card {
+  position: relative;
+  flex: 0 0 auto;
+  width: clamp(300px, 42vw, 540px);
+  aspect-ratio: 16 / 9;
+  padding: 0;
+  border: 1px solid var(--hairline);
+  border-radius: 10px;
+  overflow: hidden;
+  background: #07090800;
+  scroll-snap-align: start;
+  cursor: pointer;
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  transition: transform 0.45s var(--ease-out-quart),
+    border-color var(--dur-state) var(--ease-out-quart),
+    box-shadow 0.45s var(--ease-out-quart);
+}
+.card:hover {
+  transform: translateY(-4px);
+  border-color: color-mix(in oklch, var(--cream) 35%, transparent);
+  box-shadow: 0 24px 70px -28px rgba(0, 0, 0, 0.8);
+}
+.card:focus-visible {
+  outline: 2px solid var(--emerald);
+  outline-offset: 4px;
+}
+.cardMedia {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  background: var(--void);
+  /* harmonize disparate stock footage into one graded world */
+  filter: saturate(0.9) contrast(1.05) brightness(0.92);
+}
+.cardScrim {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background:
+    linear-gradient(
+      to top,
+      rgba(10, 14, 13, 0.9) 0%,
+      rgba(10, 14, 13, 0.32) 38%,
+      rgba(10, 14, 13, 0) 62%
+    ),
+    radial-gradient(
+      130% 120% at 50% 40%,
+      rgba(10, 14, 13, 0) 60%,
+      rgba(10, 14, 13, 0.4) 100%
+    );
+}
+.cardMeta {
+  position: absolute;
+  left: clamp(1rem, 2vw, 1.5rem);
+  right: clamp(1rem, 2vw, 1.5rem);
+  bottom: clamp(1rem, 2vw, 1.5rem);
+}
+.cardCat {
+  display: block;
+  margin-bottom: 0.4rem;
+  font-family: var(--font-mono), monospace;
+  font-size: 0.66rem;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--emerald);
+}
+.cardTitle {
+  font-family: var(--font-display), sans-serif;
+  font-weight: 600;
+  font-size: clamp(1.15rem, 1.7vw, 1.5rem);
+  line-height: 1.05;
+  letter-spacing: -0.01em;
+  color: var(--cream);
+}
+.badge {
+  position: absolute;
+  top: clamp(0.85rem, 1.6vw, 1.15rem);
+  right: clamp(0.85rem, 1.6vw, 1.15rem);
+  padding: 5px 10px;
+  border: 1px solid var(--hairline);
+  border-radius: 3px;
+  background: rgba(10, 14, 13, 0.55);
+  font-family: var(--font-mono), monospace;
+  font-size: 0.64rem;
+  letter-spacing: 0.1em;
+  color: var(--cream);
+  font-variant-numeric: tabular-nums;
+}
+.play {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  display: grid;
+  place-items: center;
+  width: 64px;
+  height: 64px;
+  transform: translate(-50%, -50%) scale(0.82);
+  border-radius: 9999px;
+  background: rgba(10, 14, 13, 0.5);
+  border: 1px solid color-mix(in oklch, var(--cream) 45%, transparent);
+  color: var(--cream);
+  opacity: 0;
+  transition: opacity 0.4s var(--ease-out-quart),
+    transform 0.4s var(--ease-out-quart), background var(--dur-state) ease;
+  pointer-events: none;
+}
+.card:hover .play,
+.card:focus-visible .play {
+  opacity: 1;
+  transform: translate(-50%, -50%) scale(1);
+}
+.card:hover .play {
+  background: var(--emerald);
+  color: var(--void);
+  border-color: var(--emerald);
+}
+.playIcon {
+  width: 20px;
+  height: 20px;
+  margin-left: 3px;
+  fill: currentColor;
+}
+
+/* ---- Lightbox (native <dialog>, renders in the top layer) ---- */
+.dialog {
+  width: min(92vw, 980px);
+  max-width: 92vw;
+  padding: 0;
+  border: none;
+  background: transparent;
+  color: var(--cream);
+  overflow: visible;
+}
+.dialog::backdrop {
+  background: rgba(6, 9, 8, 0.82);
+  backdrop-filter: blur(8px);
+}
+.dialogStage {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  border: 1px solid var(--hairline);
+  border-radius: 10px;
+  overflow: hidden;
+  background: var(--void);
+  box-shadow: 0 40px 120px -40px rgba(0, 0, 0, 0.9);
+}
+.dialogVideo {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  background: var(--void);
+}
+.dialogBar {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 1.5rem;
+  margin-top: 1.1rem;
+}
+.dialogTitle {
+  font-family: var(--font-display), sans-serif;
+  font-weight: 600;
+  font-size: clamp(1.25rem, 2.4vw, 1.85rem);
+  letter-spacing: -0.02em;
+  color: var(--cream);
+}
+.dialogCat {
+  display: block;
+  margin-top: 0.35rem;
+  font-family: var(--font-mono), monospace;
+  font-size: 0.68rem;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--mist);
+}
+.close {
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 10px 18px;
+  border: 1px solid var(--hairline);
+  border-radius: 9999px;
+  background: transparent;
+  color: var(--cream);
+  font-family: var(--font-mono), monospace;
+  font-size: 0.7rem;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: background var(--dur-state) ease, color var(--dur-state) ease,
+    border-color var(--dur-state) ease;
+}
+.close:hover {
+  background: var(--cream);
+  color: var(--void);
+  border-color: var(--cream);
+}
+.close:focus-visible {
+  outline: 2px solid var(--emerald);
+  outline-offset: 3px;
+}
+
+/* ---- Responsive ---- */
+@media (max-width: 640px) {
+  .head {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 1.5rem;
+  }
+  .controls {
+    display: none; /* touch users swipe the track */
+  }
+  .card {
+    width: min(82vw, 460px);
+  }
+}
+
+/* ---- Reduced motion: no preview autoplay (JS), no hover lift ---- */
+@media (prefers-reduced-motion: reduce) {
+  .card,
+  .play {
+    transition: opacity var(--dur-state) ease;
+  }
+  .card:hover {
+    transform: none;
+  }
+  .card:hover .play,
+  .card:focus-visible .play {
+    transform: translate(-50%, -50%) scale(1);
+  }
+  .dialog::backdrop {
+    backdrop-filter: none;
+  }
+}
