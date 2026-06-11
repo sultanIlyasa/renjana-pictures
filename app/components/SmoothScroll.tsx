@@ -11,7 +11,9 @@ gsap.registerPlugin(ScrollTrigger);
 /*
  * Global inertia smooth scroll. Lenis drives the page, GSAP's ticker drives Lenis,
  * and every Lenis scroll feeds ScrollTrigger.update so pins/scrubs stay in sync.
- * Fully disabled under prefers-reduced-motion (native scrolling, no inertia).
+ * Fully disabled under prefers-reduced-motion and touch/small screens. Mobile
+ * browsers already have tuned native momentum; adding virtual scroll there makes
+ * pinned sections feel sticky while the finger has stopped moving.
  */
 export default function SmoothScroll({
   children,
@@ -19,7 +21,16 @@ export default function SmoothScroll({
   children: React.ReactNode;
 }) {
   useEffect(() => {
-    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    const touchOrSmall = window.matchMedia(
+      "(pointer: coarse), (max-width: 820px)",
+    ).matches;
+
+    if (reduce || touchOrSmall) {
+      setLenis(null);
+      ScrollTrigger.refresh();
+      return;
+    }
 
     const lenis = new Lenis({ duration: 1.1, smoothWheel: true });
     setLenis(lenis);

@@ -63,27 +63,32 @@ export default function Hero() {
             "-=0.6",
           )
           .to(".js-cue", { autoAlpha: 1, y: 0, duration: 0.7 }, "-=0.35");
-
-        // Scroll handoff: the hero pins and its content dissolves + recedes as you
-        // scroll past it. Pinning gives the standalone hero its own scroll length, so
-        // the cue and scrub are functional today; once Section 2 mounts directly after,
-        // the release lands on it instead of the bare void canvas.
-        gsap.to(contentRef.current, {
-          opacity: 0,
-          scale: 0.94,
-          yPercent: -6,
-          ease: "none",
-          scrollTrigger: {
-            trigger: rootRef.current,
-            start: "top top",
-            end: "+=45%",
-            scrub: true,
-            pin: true,
-            pinSpacing: true,
-            anticipatePin: 1,
-          },
-        });
       });
+
+      mm.add(
+        "(prefers-reduced-motion: no-preference) and (min-width: 821px)",
+        () => {
+          // Scroll handoff: the hero pins and its content dissolves + recedes as you
+          // scroll past it. Pinning gives the standalone hero its own scroll length, so
+          // the cue and scrub are functional today; once Section 2 mounts directly after,
+          // the release lands on it instead of the bare void canvas.
+          gsap.to(contentRef.current, {
+            opacity: 0,
+            scale: 0.94,
+            yPercent: -6,
+            ease: "none",
+            scrollTrigger: {
+              trigger: rootRef.current,
+              start: "top top",
+              end: "+=45%",
+              scrub: true,
+              pin: true,
+              pinSpacing: true,
+              anticipatePin: 1,
+            },
+          });
+        },
+      );
     }, rootRef);
 
     return () => ctx.revert();

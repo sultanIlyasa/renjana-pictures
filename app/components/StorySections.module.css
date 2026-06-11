@@ -252,6 +252,8 @@
   scroll-padding-inline: clamp(1.5rem, 5vw, 5rem);
   scroll-snap-type: x proximity;
   scrollbar-width: none;
+  -webkit-overflow-scrolling: touch;
+  touch-action: pan-x pan-y;
 }
 
 .panelTrack::-webkit-scrollbar {
@@ -282,6 +284,7 @@
   height: 100%;
   object-fit: cover;
   filter: saturate(0.86) brightness(0.82) contrast(1.08);
+  pointer-events: none;
 }
 
 .panelScrim {
