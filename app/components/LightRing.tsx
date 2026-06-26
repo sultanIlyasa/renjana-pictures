@@ -1,8 +1,10 @@
 "use client";
 
-import { useEffect, useLayoutEffect, useRef } from "react";
+import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
+import type { LightRingCopy } from "../data/siteContent";
+import type { SiteLanguage } from "./content";
 import { createScrubScene } from "./scrubScene";
 import styles from "./LightRing.module.css";
 
@@ -11,29 +13,80 @@ gsap.registerPlugin(ScrollTrigger);
 const useIsomorphicLayoutEffect =
   typeof window !== "undefined" ? useLayoutEffect : useEffect;
 
-const SERVICES = [
-  {
-    num: "01 / Broadcast",
-    title: "Live-ready stories for every screen.",
-    body: "Multi-camera coverage, broadcast packages, launch films, and event edits built for pace and clarity.",
+const SERVICES: Record<SiteLanguage, LightRingCopy> = {
+  id: {
+    tag: "Orbit layanan",
+    aria: "Layanan Renjana Pictures dalam gerak",
+    items: [
+      {
+        num: "01 / Siaran",
+        title: "Cerita live yang tetap rapi di banyak layar.",
+        body: "Liputan multi-kamera, paket siaran, film peluncuran, dan edit acara dengan ritme yang terjaga.",
+      },
+      {
+        num: "02 / Film",
+        title: "Atmosfer, tempo, dan frame yang punya daya tinggal.",
+        body: "Film brand, narasi kampanye, reel produk, dan treatment visual yang matang sebelum kamera bergerak.",
+      },
+      {
+        num: "03 / Iklan",
+        title: "Karya komersial yang dibuat untuk diingat.",
+        body: "TVC, potongan sosial, motion graphic, color, sound, dan master final untuk setiap kanal tayang.",
+      },
+    ],
   },
-  {
-    num: "02 / Film",
-    title: "Atmosphere, rhythm, and a frame that holds.",
-    body: "Brand films, campaign narratives, product reels, and visual treatments shaped before the camera moves.",
+  en: {
+    tag: "Orbital services",
+    aria: "Renjana Pictures services in motion",
+    items: [
+      {
+        num: "01 / Broadcast",
+        title: "Live-ready stories for every screen.",
+        body: "Multi-camera coverage, broadcast packages, launch films, and event edits built for pace and clarity.",
+      },
+      {
+        num: "02 / Film",
+        title: "Atmosphere, rhythm, and a frame that holds.",
+        body: "Brand films, campaign narratives, product reels, and visual treatments shaped before the camera moves.",
+      },
+      {
+        num: "03 / Advertising",
+        title: "Commercial work made to be remembered.",
+        body: "TV spots, social-first cuts, motion graphics, color, sound, and delivery masters for every channel.",
+      },
+    ],
   },
-  {
-    num: "03 / Advertising",
-    title: "Commercial work made to be remembered.",
-    body: "TV spots, social-first cuts, motion graphics, color, sound, and delivery masters for every channel.",
-  },
-];
+};
 
-export default function LightRing() {
+function getLightRingCopy(
+  language: SiteLanguage,
+  content?: Partial<LightRingCopy>,
+) {
+  const fallback = SERVICES[language];
+
+  return {
+    ...fallback,
+    ...content,
+    items: content?.items?.length ? content.items : fallback.items,
+  };
+}
+
+export default function LightRing({
+  content,
+  language,
+}: {
+  content?: Partial<LightRingCopy>;
+  language: SiteLanguage;
+}) {
   const sectionRef = useRef<HTMLElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const railRef = useRef<HTMLDivElement>(null);
   const railFillRef = useRef<HTMLDivElement>(null);
+  const activeServiceRef = useRef(0);
+  const [activeServiceIndex, setActiveServiceIndex] = useState(0);
+  const copy = getLightRingCopy(language, content);
+  const activeCaption =
+    copy.items[Math.min(activeServiceIndex, copy.items.length - 1)] ?? copy.items[0];
 
   useIsomorphicLayoutEffect(() => {
     const section = sectionRef.current;
@@ -56,26 +109,21 @@ export default function LightRing() {
           section.dataset.motion = "on";
           const rail = railRef.current;
           const railFill = railFillRef.current;
-          const captions = gsap.utils.toArray<HTMLElement>("[data-ring-caption]");
           const services = gsap.utils.toArray<HTMLElement>("[data-ring-service]");
-          let activeService = -1;
 
           const setActiveService = (progress: number) => {
             const index = Math.min(
               services.length - 1,
               Math.max(0, Math.floor(progress * services.length)),
             );
-            if (index === activeService) return;
-            activeService = index;
+            if (index === activeServiceRef.current) return;
+            activeServiceRef.current = index;
+            setActiveServiceIndex(index);
             services.forEach((service, i) => {
               service.dataset.active = i === index ? "true" : "false";
             });
           };
 
-          gsap.set(captions, { autoAlpha: 0, y: 34, filter: "blur(8px)" });
-          gsap.set(captions[0], { autoAlpha: 1, y: 0, filter: "blur(0px)" });
-          gsap.set(services, { autoAlpha: 0.48, y: 10 });
-          gsap.set(services[0], { autoAlpha: 1, y: 0 });
           if (rail) rail.style.opacity = "";
           if (railFill) railFill.style.transform = "scaleY(0)";
           setActiveService(0);
@@ -87,84 +135,30 @@ export default function LightRing() {
            * service copy. Because render(progress) is deterministic, forward and
            * reverse scrolling scrub the same frames without time-based drift.
            */
-          const tl = gsap.timeline({
-            scrollTrigger: {
-              trigger: section,
-              start: "top top",
-              end: () => `+=${Math.round(window.innerHeight * 3.2)}`,
-              pin: true,
-              pinSpacing: true,
-              scrub: 1,
-              anticipatePin: 1,
-              invalidateOnRefresh: true,
-              onUpdate: (self) => {
-                scene.render(self.progress);
-                section.style.setProperty(
-                  "--ring-progress",
-                  self.progress.toFixed(4),
-                );
-                if (railFill) {
-                  railFill.style.transform = `scaleY(${self.progress.toFixed(4)})`;
-                }
-                setActiveService(self.progress);
-              },
+          const trigger = ScrollTrigger.create({
+            trigger: section,
+            start: "top top",
+            end: () => `+=${Math.round(window.innerHeight * 3.2)}`,
+            pin: true,
+            pinSpacing: true,
+            scrub: 1,
+            anticipatePin: 1,
+            invalidateOnRefresh: true,
+            onUpdate: (self) => {
+              scene.render(self.progress);
+              section.style.setProperty(
+                "--ring-progress",
+                self.progress.toFixed(4),
+              );
+              if (railFill) {
+                railFill.style.transform = `scaleY(${self.progress.toFixed(4)})`;
+              }
+              setActiveService(self.progress);
             },
           });
 
-          const seg = 1 / captions.length;
-          captions.forEach((cap, i) => {
-            const start = i * seg;
-            if (i > 0) {
-              tl.fromTo(
-                cap,
-                { autoAlpha: 0, y: 34, filter: "blur(8px)" },
-                {
-                  autoAlpha: 1,
-                  y: 0,
-                  filter: "blur(0px)",
-                  duration: seg * 0.28,
-                  ease: "expo.out",
-                },
-                start + seg * 0.08,
-              );
-            }
-
-            if (i < captions.length - 1) {
-              tl.to(
-                cap,
-                {
-                  autoAlpha: 0,
-                  y: -26,
-                  filter: "blur(7px)",
-                  duration: seg * 0.2,
-                  ease: "power1.in",
-                },
-                start + seg * 0.76,
-              );
-            }
-          });
-
-          services.forEach((service, i) => {
-            const start = i * seg;
-            tl.to(
-              service,
-              { autoAlpha: 1, y: 0, duration: seg * 0.22, ease: "expo.out" },
-              start + seg * 0.06,
-            ).to(
-              service,
-              {
-                autoAlpha: i === services.length - 1 ? 1 : 0.48,
-                y: i === services.length - 1 ? 0 : -6,
-                duration: seg * 0.18,
-                ease: "power1.out",
-              },
-              start + seg * 0.74,
-            );
-          });
-
-          tl.to({}, { duration: 0.001 }, 1);
-
           return () => {
+            trigger.kill();
             delete section.dataset.motion;
             section.style.removeProperty("--ring-progress");
             services.forEach((service) => {
@@ -207,38 +201,33 @@ export default function LightRing() {
 
   return (
     <section
+      id="orbit-services"
       ref={sectionRef}
       className={styles.scrub}
-      aria-label="Renjana Pictures services in motion"
+      aria-label={copy.aria}
     >
       <canvas ref={canvasRef} className={styles.canvas} aria-hidden="true" />
 
       <p className={styles.tag}>
         <span className={styles.tagMark} aria-hidden="true" />
-        Orbital services
+        {copy.tag}
       </p>
 
       <div className={styles.captions}>
-        {SERVICES.map((service) => (
-          <article
-            key={service.num}
-            className={styles.caption}
-            data-ring-caption
-          >
-            <span className={styles.capNum}>{service.num}</span>
-            <h2 className={styles.capTxt}>{service.title}</h2>
-            <p className={styles.capBody}>{service.body}</p>
-          </article>
-        ))}
+        <article key={activeCaption.num} className={styles.caption}>
+          <span className={styles.capNum}>{activeCaption.num}</span>
+          <h2 className={styles.capTxt}>{activeCaption.title}</h2>
+          <p className={styles.capBody}>{activeCaption.body}</p>
+        </article>
       </div>
 
       <ul className={styles.serviceList} aria-label="Service progression">
-        {SERVICES.map((service, i) => (
+        {copy.items.map((service, i) => (
           <li
-            key={service.num}
+            key={i}
             className={styles.serviceItem}
             data-ring-service
-            data-active={i === 0 ? "true" : "false"}
+            data-active={i === activeServiceIndex ? "true" : "false"}
           >
             <span className={styles.serviceDot} aria-hidden="true" />
             <span>

@@ -1,13 +1,8 @@
-import Hero from "./components/Hero";
-import LightRing from "./components/LightRing";
-import StorySections from "./components/StorySections";
+import LandingPage from "./components/LandingPage";
+import { getSanitySiteContent } from "./lib/sanityContent";
 
-export default function Home() {
-  return (
-    <main className="flex flex-1 flex-col bg-void">
-      <Hero />
-      <LightRing />
-      <StorySections />
-    </main>
-  );
+export default async function Home() {
+  const content = await getSanitySiteContent();
+
+  return <LandingPage content={content} />;
 }

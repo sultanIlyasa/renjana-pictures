@@ -8,7 +8,7 @@
   isolation: isolate; /* own stacking context for the z-scale */
 }
 
-/* ---- Background: cinematic still + slow Ken Burns drift ---- */
+/* ---- Background: autoplay showreel + slow Ken Burns drift ---- */
 .bg {
   position: absolute;
   inset: 0;
@@ -16,11 +16,11 @@
   background: var(--void); /* no flash before the image paints */
 }
 
-.bgImg {
+.bgVideo {
   width: 100%;
   height: 100%;
   object-fit: cover;
-  object-position: 50% 28%;
+  object-position: 50% 50%;
   filter: saturate(0.92) brightness(0.82) contrast(1.04);
   will-change: transform;
   animation: kenburns 28s ease-in-out infinite alternate;
@@ -85,6 +85,14 @@
     clamp(2rem, 5vh, 3.5rem);
 }
 
+.topline {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1.5rem;
+  min-width: 0;
+}
+
 /* Top: film-credit chrome (NOT a section eyebrow) */
 .credit {
   font-family: var(--font-mono), monospace;
@@ -97,6 +105,68 @@
 .creditMark {
   display: block;
   color: var(--cream);
+}
+
+.heroTools {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 1rem;
+  min-width: 0;
+}
+
+.videoMeta {
+  color: var(--mist);
+  font-family: var(--font-mono), monospace;
+  font-size: 0.66rem;
+  letter-spacing: 0.18em;
+  line-height: 1.5;
+  text-align: right;
+  text-transform: uppercase;
+  overflow-wrap: anywhere;
+}
+
+.langSwitch {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  border: 1px solid color-mix(in oklch, var(--cream) 18%, var(--hairline));
+  background: rgba(10, 14, 13, 0.42);
+  backdrop-filter: blur(14px);
+}
+
+.langSwitch button {
+  min-width: 5.4rem;
+  padding: 0.66rem 0.72rem;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  color: var(--mist);
+  cursor: pointer;
+  font-family: var(--font-mono), monospace;
+  font-size: 0.62rem;
+  letter-spacing: 0.14em;
+  line-height: 1;
+  text-transform: uppercase;
+  transition:
+    background var(--dur-state) var(--ease-out-quart),
+    color var(--dur-state) var(--ease-out-quart);
+}
+
+.langSwitch button + button {
+  border-left: 1px solid color-mix(in oklch, var(--cream) 18%, var(--hairline));
+}
+
+.langSwitch button:hover,
+.langSwitch button[aria-pressed="true"] {
+  background: var(--cream);
+  color: var(--void);
+}
+
+.langSwitch button:focus-visible {
+  position: relative;
+  z-index: 1;
+  outline: 2px solid var(--emerald);
+  outline-offset: 3px;
 }
 
 /* Bottom cluster */
@@ -121,6 +191,7 @@
   letter-spacing: -0.03em;
   color: var(--cream);
   text-wrap: balance;
+  overflow-wrap: anywhere;
 }
 
 .word {
@@ -133,6 +204,7 @@
 }
 .inner {
   display: inline-block;
+  transform: translateY(var(--hero-word-y, 0%));
   will-change: transform;
 }
 .accent {
@@ -264,6 +336,26 @@
 }
 
 @media (max-width: 760px) {
+  .content {
+    gap: clamp(1.5rem, 5vh, 2.75rem);
+    padding: clamp(1rem, 4vw, 1.5rem);
+  }
+
+  .topline,
+  .heroTools {
+    display: grid;
+    justify-items: start;
+    width: 100%;
+  }
+
+  .heroTools {
+    gap: 0.8rem;
+  }
+
+  .videoMeta {
+    text-align: left;
+  }
+
   .bottom {
     flex-direction: column;
     align-items: flex-start;
@@ -297,11 +389,45 @@
   .headline {
     font-size: clamp(2.3rem, 12.5vw, 3.25rem);
   }
+
+  .ctas {
+    width: 100%;
+  }
+
+  .btnPrimary,
+  .btnGhost {
+    justify-content: center;
+    width: 100%;
+    min-height: 48px;
+    padding-inline: 1rem;
+  }
+
+  .langSwitch button {
+    min-width: 4.8rem;
+  }
+}
+
+@media (max-width: 820px) and (max-height: 620px) {
+  .content {
+    gap: 1rem;
+    padding-block: 0.9rem;
+  }
+
+  .headline {
+    margin-bottom: 0.8rem;
+    font-size: clamp(2rem, 9vw, 3rem);
+  }
+
+  .sub {
+    margin-bottom: 1rem;
+    font-size: 0.95rem;
+    line-height: 1.45;
+  }
 }
 
 /* Static fallback — no Ken Burns under reduced motion (JS handles the rest) */
 @media (prefers-reduced-motion: reduce) {
-  .bgImg {
+  .bgVideo {
     animation: none;
     transform: scale(1.04);
   }

@@ -75,14 +75,6 @@
   max-width: min(38rem, 88vw);
 }
 
-.caption:not(:first-child) {
-  display: none;
-}
-
-.scrub[data-motion="on"] .caption {
-  display: block;
-}
-
 .capNum {
   display: block;
   margin-bottom: 0.9rem;
@@ -220,6 +212,10 @@
 }
 
 @media (max-width: 760px) {
+  .scrub {
+    min-height: 100svh;
+  }
+
   .serviceList,
   .rail {
     display: none;
@@ -253,6 +249,30 @@
 
   .capTxt {
     font-size: clamp(2rem, 12vw, 3.15rem);
+  }
+}
+
+@media (max-width: 820px) and (max-height: 620px) {
+  .tag {
+    top: 1rem;
+  }
+
+  .captions {
+    bottom: 1.4rem;
+    min-height: 12rem;
+  }
+
+  .capTxt {
+    max-width: 17ch;
+    font-size: clamp(1.8rem, 8vw, 2.7rem);
+  }
+
+  .capBody {
+    display: -webkit-box;
+    overflow: hidden;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+    line-height: 1.5;
   }
 }
 
