@@ -1,15 +1,4 @@
-/* =============================================================================
-   Procedural scroll-scrub centrepiece - "Orbital Service Ring"
-   -----------------------------------------------------------------------------
-   A deterministic 2.5D canvas scene: light fragments assemble into an orbital
-   ring, then rotate with depth sorting, perspective scale, floor reflections,
-   and dust. ScrollTrigger calls render(progress) on every scrub tick, so forward
-   and reverse scroll always land on the same visual frame.
-
-   Swap path: a real <video> can replace the canvas by mapping currentTime to
-   progress in LightRing.tsx. A PNG sequence can do the same by drawing
-   frames[Math.round(progress * (frames.length - 1))] to this canvas.
-============================================================================= */
+import * as THREE from "three";
 
 export interface ScrubScene {
   render: (progress: number) => void;
@@ -17,219 +6,373 @@ export interface ScrubScene {
   destroy: () => void;
 }
 
-const TWO_PI = Math.PI * 2;
-const clamp = (v: number, a = 0, b = 1) => Math.min(b, Math.max(a, v));
-const easeOut = (t: number) => 1 - Math.pow(1 - t, 3);
-const easeInOut = (t: number) =>
-  t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
-
-function seeded(index: number, salt: number) {
-  const x = Math.sin(index * 12.9898 + salt * 78.233) * 43758.5453;
-  return x - Math.floor(x);
+export interface ScrubSceneOptions {
+  logoSrc: string;
 }
 
-interface Dust {
+const TWO_PI = Math.PI * 2;
+const SPINS = 2.15;
+const clamp = (value: number, min = 0, max = 1) =>
+  Math.min(max, Math.max(min, value));
+const easeOut = (value: number) => 1 - Math.pow(1 - value, 3);
+
+interface SourceRect {
   x: number;
   y: number;
-  r: number;
-  a: number;
-  drift: number;
+  width: number;
+  height: number;
 }
 
-export function createScrubScene(canvas: HTMLCanvasElement): ScrubScene {
-  const ctx = canvas.getContext("2d");
-  const BARS = 84;
-  const SPINS = 2.15;
-  let w = 0;
-  let h = 0;
-  let dpr = 1;
-  let dust: Dust[] = [];
+const EMBLEM_SOURCE: SourceRect = {
+  x: 150,
+  y: 105,
+  width: 780,
+  height: 725,
+};
+
+const WORDMARK_SOURCE: SourceRect = {
+  x: 25,
+  y: 820,
+  width: 1030,
+  height: 170,
+};
+
+function seeded(index: number, salt: number) {
+  const value = Math.sin(index * 12.9898 + salt * 78.233) * 43758.5453;
+  return value - Math.floor(value);
+}
+
+function createCropTexture(
+  renderer: THREE.WebGLRenderer,
+  image: HTMLImageElement,
+  source: SourceRect,
+  width: number,
+) {
+  const crop = document.createElement("canvas");
+  crop.width = width;
+  crop.height = Math.round(width * (source.height / source.width));
+  const context = crop.getContext("2d");
+
+  if (!context) return null;
+
+  context.clearRect(0, 0, crop.width, crop.height);
+  context.drawImage(
+    image,
+    source.x,
+    source.y,
+    source.width,
+    source.height,
+    0,
+    0,
+    crop.width,
+    crop.height,
+  );
+
+  const texture = new THREE.CanvasTexture(crop);
+  texture.colorSpace = THREE.SRGBColorSpace;
+  texture.anisotropy = Math.min(renderer.capabilities.getMaxAnisotropy(), 8);
+  texture.minFilter = THREE.LinearMipmapLinearFilter;
+  texture.magFilter = THREE.LinearFilter;
+  texture.needsUpdate = true;
+  return texture;
+}
+
+function createOrbitLine(
+  radiusX: number,
+  radiusY: number,
+  opacity: number,
+  color = 0x259e8f,
+) {
+  const points = Array.from({ length: 160 }, (_, index) => {
+    const angle = (index / 160) * TWO_PI;
+    return new THREE.Vector3(
+      Math.cos(angle) * radiusX,
+      Math.sin(angle) * radiusY,
+      0,
+    );
+  });
+  const geometry = new THREE.BufferGeometry().setFromPoints(points);
+  const material = new THREE.LineBasicMaterial({
+    color,
+    transparent: true,
+    opacity,
+    blending: THREE.AdditiveBlending,
+    depthWrite: false,
+  });
+  return new THREE.LineLoop(geometry, material);
+}
+
+function createGlowTexture() {
+  const canvas = document.createElement("canvas");
+  canvas.width = 256;
+  canvas.height = 256;
+  const context = canvas.getContext("2d");
+
+  if (!context) return null;
+
+  const glow = context.createRadialGradient(128, 128, 0, 128, 128, 128);
+  glow.addColorStop(0, "rgba(86, 230, 210, 0.32)");
+  glow.addColorStop(0.3, "rgba(37, 158, 143, 0.16)");
+  glow.addColorStop(1, "rgba(37, 158, 143, 0)");
+  context.fillStyle = glow;
+  context.fillRect(0, 0, 256, 256);
+
+  const texture = new THREE.CanvasTexture(canvas);
+  texture.colorSpace = THREE.SRGBColorSpace;
+  texture.needsUpdate = true;
+  return texture;
+}
+
+export function createScrubScene(
+  canvas: HTMLCanvasElement,
+  { logoSrc }: ScrubSceneOptions,
+): ScrubScene {
+  let renderer: THREE.WebGLRenderer | null = null;
+
+  try {
+    renderer = new THREE.WebGLRenderer({
+      canvas,
+      alpha: true,
+      antialias: true,
+      powerPreference: "high-performance",
+    });
+  } catch {
+    return {
+      render: () => undefined,
+      resize: () => undefined,
+      destroy: () => undefined,
+    };
+  }
+
+  renderer.setClearColor(0x000000, 0);
+  renderer.outputColorSpace = THREE.SRGBColorSpace;
+  renderer.toneMapping = THREE.ACESFilmicToneMapping;
+  renderer.toneMappingExposure = 1.08;
+
+  const scene = new THREE.Scene();
+  const camera = new THREE.PerspectiveCamera(35, 1, 0.1, 30);
+  camera.position.set(0, 0, 8);
+
+  const ambientLight = new THREE.AmbientLight(0x9fded5, 1.35);
+  const keyLight = new THREE.DirectionalLight(0xe7fff9, 2.6);
+  keyLight.position.set(-3, 4, 6);
+  const rimLight = new THREE.DirectionalLight(0x259e8f, 2.2);
+  rimLight.position.set(4, -1, 3);
+  scene.add(ambientLight, keyLight, rimLight);
+
+  const orbitGroup = new THREE.Group();
+  const orbitLines = [
+    createOrbitLine(1.55, 0.42, 0.17, 0xfdf5d7),
+    createOrbitLine(2.0, 0.54, 0.11),
+    createOrbitLine(2.48, 0.67, 0.075),
+    createOrbitLine(3.02, 0.82, 0.045),
+  ];
+  orbitLines.forEach((line) => orbitGroup.add(line));
+  scene.add(orbitGroup);
+
+  const dustCount = 110;
+  const dustPositions = new Float32Array(dustCount * 3);
+  for (let index = 0; index < dustCount; index++) {
+    dustPositions[index * 3] = (seeded(index, 1) - 0.5) * 9.5;
+    dustPositions[index * 3 + 1] = (seeded(index, 2) - 0.5) * 5.8;
+    dustPositions[index * 3 + 2] = -1.2 + seeded(index, 3) * 2.6;
+  }
+  const dustGeometry = new THREE.BufferGeometry();
+  dustGeometry.setAttribute(
+    "position",
+    new THREE.BufferAttribute(dustPositions, 3),
+  );
+  const dustMaterial = new THREE.PointsMaterial({
+    color: 0xfdf5d7,
+    size: 0.018,
+    transparent: true,
+    opacity: 0.28,
+    sizeAttenuation: true,
+    depthWrite: false,
+  });
+  const dust = new THREE.Points(dustGeometry, dustMaterial);
+  scene.add(dust);
+
+  const glowTexture = createGlowTexture();
+  const glowMaterial = glowTexture
+    ? new THREE.SpriteMaterial({
+        map: glowTexture,
+        color: 0x66d6c7,
+        transparent: true,
+        opacity: 0.68,
+        blending: THREE.AdditiveBlending,
+        depthWrite: false,
+      })
+    : null;
+  const glow = glowMaterial ? new THREE.Sprite(glowMaterial) : null;
+  if (glow) {
+    glow.scale.set(4.8, 4.8, 1);
+    glow.position.z = -0.8;
+    scene.add(glow);
+  }
+
+  const logoGroup = new THREE.Group();
+  scene.add(logoGroup);
+
+  let wordmark: THREE.Mesh<THREE.PlaneGeometry, THREE.MeshBasicMaterial> | null =
+    null;
+  let emblemTexture: THREE.CanvasTexture | null = null;
+  let wordmarkTexture: THREE.CanvasTexture | null = null;
+  let frontMaterial: THREE.MeshStandardMaterial | null = null;
+  let backMaterial: THREE.MeshStandardMaterial | null = null;
+  let depthMaterial: THREE.MeshStandardMaterial | null = null;
+  let wordmarkMaterial: THREE.MeshBasicMaterial | null = null;
+  let emblemGeometry: THREE.PlaneGeometry | null = null;
+  let wordmarkGeometry: THREE.PlaneGeometry | null = null;
+  let baseLogoScale = 1;
+  let baseWordmarkScale = 1;
+  let width = 1;
+  let height = 1;
   let last = 0;
+  let logoBuilt = false;
+  let destroyed = false;
+
+  const image = new Image();
+  image.decoding = "async";
+
+  const handleLogoLoad = () => {
+    if (destroyed || logoBuilt || !renderer) return;
+    logoBuilt = true;
+
+    emblemTexture = createCropTexture(renderer, image, EMBLEM_SOURCE, 1024);
+    wordmarkTexture = createCropTexture(renderer, image, WORDMARK_SOURCE, 1024);
+    if (!emblemTexture || !wordmarkTexture) {
+      logoBuilt = false;
+      return;
+    }
+
+    emblemGeometry = new THREE.PlaneGeometry(2.15, 2.0, 1, 1);
+    frontMaterial = new THREE.MeshStandardMaterial({
+      map: emblemTexture,
+      transparent: true,
+      alphaTest: 0.08,
+      roughness: 0.34,
+      metalness: 0.08,
+      side: THREE.FrontSide,
+    });
+    backMaterial = frontMaterial.clone();
+    depthMaterial = new THREE.MeshStandardMaterial({
+      map: emblemTexture,
+      color: 0x176f65,
+      transparent: true,
+      alphaTest: 0.12,
+      opacity: 0.86,
+      roughness: 0.6,
+      metalness: 0.16,
+      side: THREE.DoubleSide,
+    });
+
+    const depth = 0.26;
+    const slices = 12;
+    for (let index = 0; index < slices; index++) {
+      const slice = new THREE.Mesh(emblemGeometry, depthMaterial);
+      slice.position.z = -depth / 2 + (index / (slices - 1)) * depth;
+      logoGroup.add(slice);
+    }
+
+    const front = new THREE.Mesh(emblemGeometry, frontMaterial);
+    front.position.z = depth / 2 + 0.012;
+    logoGroup.add(front);
+
+    const back = new THREE.Mesh(emblemGeometry, backMaterial);
+    back.position.z = -depth / 2 - 0.012;
+    back.rotation.y = Math.PI;
+    logoGroup.add(back);
+
+    wordmarkGeometry = new THREE.PlaneGeometry(2.6, 0.43, 1, 1);
+    wordmarkMaterial = new THREE.MeshBasicMaterial({
+      map: wordmarkTexture,
+      transparent: true,
+      alphaTest: 0.04,
+      depthWrite: false,
+      toneMapped: false,
+    });
+    wordmark = new THREE.Mesh(wordmarkGeometry, wordmarkMaterial);
+    wordmark.position.z = 0.15;
+    scene.add(wordmark);
+
+    resize();
+    render(last);
+  };
+
+  image.addEventListener("load", handleLogoLoad);
+  image.src = logoSrc;
 
   function resize() {
+    if (!renderer) return;
     const rect = canvas.getBoundingClientRect();
-    dpr = Math.min(window.devicePixelRatio || 1, 2);
-    w = Math.max(1, Math.round(rect.width));
-    h = Math.max(1, Math.round(rect.height));
-    canvas.width = Math.round(w * dpr);
-    canvas.height = Math.round(h * dpr);
-    if (ctx) ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-    seedDust();
-  }
+    width = Math.max(1, Math.round(rect.width));
+    height = Math.max(1, Math.round(rect.height));
+    const compact = width <= 820;
+    const pixelRatio = Math.min(
+      window.devicePixelRatio || 1,
+      compact ? 1.5 : 2,
+    );
 
-  function seedDust() {
-    const count = Math.round(clamp((w * h) / 23000, 42, 160));
-    dust = Array.from({ length: count }, (_, i) => ({
-      x: seeded(i, 1) * w,
-      y: seeded(i, 2) * h,
-      r: 0.35 + seeded(i, 3) * 1.35,
-      a: 0.035 + seeded(i, 4) * 0.11,
-      drift: 10 + seeded(i, 5) * 30,
-    }));
-  }
+    renderer.setPixelRatio(pixelRatio);
+    renderer.setSize(width, height, false);
+    camera.aspect = width / height;
+    camera.updateProjectionMatrix();
 
-  function drawEllipseGlow(cx: number, cy: number, rx: number, ry: number, alpha: number) {
-    if (!ctx) return;
-    ctx.save();
-    ctx.translate(cx, cy);
-    ctx.scale(1, ry / rx);
-    const glow = ctx.createRadialGradient(0, 0, rx * 0.18, 0, 0, rx);
-    glow.addColorStop(0, `rgba(37,158,143,${alpha})`);
-    glow.addColorStop(0.58, `rgba(37,158,143,${alpha * 0.22})`);
-    glow.addColorStop(1, "rgba(37,158,143,0)");
-    ctx.fillStyle = glow;
-    ctx.beginPath();
-    ctx.arc(0, 0, rx, 0, TWO_PI);
-    ctx.fill();
-    ctx.restore();
+    baseLogoScale = compact ? 0.72 : width < 1100 ? 0.86 : 1;
+    baseWordmarkScale = compact ? 0.7 : width < 1100 ? 0.84 : 1;
+    logoGroup.position.set(0, compact ? 0.98 : 0.76, 0);
+    orbitGroup.position.copy(logoGroup.position);
+    if (glow) glow.position.set(0, logoGroup.position.y, -0.8);
+    if (wordmark) {
+      wordmark.position.set(0, compact ? -0.08 : -0.52, 0.15);
+      wordmark.scale.setScalar(baseWordmarkScale);
+    }
   }
 
   function render(progress: number) {
-    if (!ctx) return;
+    if (!renderer) return;
     const p = clamp(progress);
+    const entrance = easeOut(clamp((p + 0.02) / 0.18));
+    const rotation = (p * SPINS + (1 - entrance) * 0.045) * TWO_PI;
     last = p;
 
-    const cx = w * 0.5;
-    const cy = h * 0.55;
-    const scale = Math.min(w, h);
-    const radius = scale * 0.29;
-    const tilt = 0.43;
-    const assemble = easeOut(clamp(p / 0.34));
-    const settle = easeInOut(clamp((p - 0.14) / 0.34));
-    const orbit = easeOut(clamp((p - 0.05) / 0.32));
-    const rot = (p * SPINS + (1 - assemble) * 0.18) * TWO_PI;
-
-    ctx.clearRect(0, 0, w, h);
-
-    const vignette = ctx.createRadialGradient(
-      cx,
-      cy * 0.9,
-      scale * 0.04,
-      cx,
-      cy,
-      scale * 0.98,
+    logoGroup.rotation.set(
+      -0.08 + Math.sin(p * Math.PI * 1.4) * 0.08,
+      rotation,
+      Math.sin(p * TWO_PI) * 0.025,
     );
-    vignette.addColorStop(0, "rgba(23,31,28,0.9)");
-    vignette.addColorStop(0.55, "rgba(10,14,13,0.32)");
-    vignette.addColorStop(1, "rgba(10,14,13,0)");
-    ctx.fillStyle = vignette;
-    ctx.fillRect(0, 0, w, h);
+    logoGroup.scale.setScalar(baseLogoScale * (0.78 + entrance * 0.22));
 
-    drawEllipseGlow(cx, cy + scale * 0.02, radius * 2.1, radius * 2.1 * tilt, 0.1 * orbit);
-
-    ctx.save();
-    ctx.lineWidth = 1;
-    for (let k = 1; k <= 5; k++) {
-      const rr = radius * (0.44 + k * 0.28) * (0.92 + p * 0.18);
-      ctx.beginPath();
-      ctx.ellipse(cx, cy, rr, rr * tilt, 0, 0, TWO_PI);
-      ctx.strokeStyle = `rgba(37,158,143,${0.035 * orbit * (1 - k * 0.08)})`;
-      ctx.stroke();
-    }
-    ctx.restore();
-
-    ctx.save();
-    ctx.lineWidth = Math.max(1, scale * 0.0022);
-    ctx.beginPath();
-    ctx.ellipse(cx, cy, radius * (1 + (1 - settle) * 0.08), radius * tilt, 0, 0, TWO_PI);
-    ctx.strokeStyle = `rgba(253,245,215,${0.08 * orbit})`;
-    ctx.stroke();
-    ctx.restore();
-
-    type Bar = {
-      sx: number;
-      sy: number;
-      top: number;
-      depth: number;
-      bw: number;
-      alpha: number;
-    };
-    const bars: Bar[] = [];
-
-    for (let i = 0; i < BARS; i++) {
-      const theta0 = (i / BARS) * TWO_PI;
-      const s1 = seeded(i, 11);
-      const s2 = seeded(i, 17);
-      const s3 = seeded(i, 23);
-      const birth = easeOut(clamp((p + 0.08 - s1 * 0.16) / 0.32));
-      const scatter = 1 - birth;
-      const angle = theta0 + rot + scatter * (s2 - 0.5) * 1.65;
-      const radialScatter = 1 + scatter * (0.9 + s1 * 0.95);
-      const r = radius * radialScatter;
-      const x = Math.cos(angle) * r;
-      const z = Math.sin(angle) * r;
-      const depth = (z + r) / (2 * r);
-      const persp = 0.72 + depth * 0.58;
-      const driftY = (s3 - 0.5) * scale * 0.42 * scatter;
-      const sx = cx + x * persp;
-      const sy = cy + z * tilt * persp + driftY;
-      const wave =
-        0.52 +
-        0.48 *
-          Math.sin(theta0 * 3 + p * TWO_PI * 2.4) *
-          Math.cos(theta0 * 2.2 - p * 4.2);
-      const servicePulse = 0.72 + 0.28 * Math.sin((p * 3 - i / BARS) * TWO_PI);
-      const hh =
-        scale *
-        (0.035 + 0.19 * wave * servicePulse + 0.045 * settle) *
-        (0.22 + birth * 0.78);
-      const bw = Math.max(1.5, scale * (0.006 + 0.007 * birth) * persp);
-      bars.push({
-        sx,
-        sy,
-        top: sy - hh * persp * birth,
-        depth,
-        bw,
-        alpha: birth * (0.18 + depth * 0.76),
-      });
+    const logoOpacity = 0.25 + entrance * 0.75;
+    if (frontMaterial) frontMaterial.opacity = logoOpacity;
+    if (backMaterial) backMaterial.opacity = logoOpacity;
+    if (depthMaterial) depthMaterial.opacity = logoOpacity * 0.86;
+    if (wordmarkMaterial) {
+      wordmarkMaterial.opacity = easeOut(clamp((p + 0.01) / 0.22)) * 0.92;
     }
 
-    bars.sort((a, b) => a.depth - b.depth);
+    orbitGroup.rotation.z = p * 0.18;
+    orbitLines.forEach((line, index) => {
+      line.rotation.z = p * (index % 2 === 0 ? 0.1 : -0.08);
+      const material = line.material as THREE.LineBasicMaterial;
+      material.opacity = (index === 0 ? 0.17 : 0.11 / (index * 0.45 + 1)) *
+        (0.35 + entrance * 0.65);
+    });
 
-    for (const bar of bars) {
-      if (bar.alpha <= 0.01) continue;
-      const { sx, sy, top, depth, bw, alpha } = bar;
-      const height = Math.max(0, sy - top);
-      const grad = ctx.createLinearGradient(0, sy, 0, top);
-      grad.addColorStop(0, `rgba(74,91,87,${alpha * 0.42})`);
-      grad.addColorStop(0.58, `rgba(37,158,143,${alpha * 0.62})`);
-      grad.addColorStop(1, `rgba(215,248,237,${alpha})`);
-      ctx.fillStyle = grad;
-      ctx.fillRect(sx - bw / 2, top, bw, height);
+    dust.rotation.z = p * 0.035;
+    dust.position.y = (p - 0.5) * 0.14;
+    if (glowMaterial) glowMaterial.opacity = 0.36 + entrance * 0.32;
 
-      const refl = ctx.createLinearGradient(0, sy, 0, sy + height * 0.58);
-      refl.addColorStop(0, `rgba(37,158,143,${alpha * 0.16 * depth})`);
-      refl.addColorStop(1, "rgba(37,158,143,0)");
-      ctx.fillStyle = refl;
-      ctx.fillRect(sx - bw / 2, sy, bw, height * 0.58);
-
-      if (depth > 0.58) {
-        ctx.fillStyle = `rgba(236,255,248,${(depth - 0.58) * 1.35 * alpha})`;
-        ctx.fillRect(sx - bw / 2, top, bw, Math.max(1.4, bw * 0.65));
-      }
-    }
-
-    const coreRadius = scale * (0.045 + p * 0.035);
-    const core = ctx.createRadialGradient(cx, cy, 0, cx, cy, coreRadius * 4.4);
-    core.addColorStop(0, `rgba(232,255,247,${0.52 * assemble})`);
-    core.addColorStop(0.32, `rgba(37,158,143,${0.28 * assemble})`);
-    core.addColorStop(1, "rgba(37,158,143,0)");
-    ctx.fillStyle = core;
-    ctx.beginPath();
-    ctx.arc(cx, cy, coreRadius * 4.4, 0, TWO_PI);
-    ctx.fill();
-
-    for (const d of dust) {
-      const y = (d.y + p * d.drift) % h;
-      ctx.fillStyle = `rgba(253,245,215,${d.a})`;
-      ctx.beginPath();
-      ctx.arc(d.x, y, d.r, 0, TWO_PI);
-      ctx.fill();
-    }
+    renderer.render(scene, camera);
   }
 
   resize();
   render(0);
+
+  if (image.complete && image.naturalWidth > 0) {
+    handleLogoLoad();
+  }
 
   return {
     render,
@@ -238,7 +381,27 @@ export function createScrubScene(canvas: HTMLCanvasElement): ScrubScene {
       render(last);
     },
     destroy: () => {
-      dust = [];
+      destroyed = true;
+      image.removeEventListener("load", handleLogoLoad);
+
+      emblemGeometry?.dispose();
+      wordmarkGeometry?.dispose();
+      emblemTexture?.dispose();
+      wordmarkTexture?.dispose();
+      frontMaterial?.dispose();
+      backMaterial?.dispose();
+      depthMaterial?.dispose();
+      wordmarkMaterial?.dispose();
+      orbitLines.forEach((line) => {
+        line.geometry.dispose();
+        (line.material as THREE.Material).dispose();
+      });
+      dustGeometry.dispose();
+      dustMaterial.dispose();
+      glowTexture?.dispose();
+      glowMaterial?.dispose();
+      renderer?.dispose();
+      renderer = null;
     },
   };
 }

@@ -15,10 +15,10 @@
   --mist: #8e9a95;
   --hairline: #252b29;
 
-  /* Type families (wired from next/font in layout.tsx) */
-  --font-display: var(--font-bricolage);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  /* Type families are bundled locally through Fontsource in layout.tsx. */
+  --font-display: "Bricolage Grotesque Variable";
+  --font-sans: "Geist Variable";
+  --font-mono: "Geist Mono Variable";
 
   /* Motion */
   --ease-out-quart: cubic-bezier(0.25, 1, 0.5, 1);
@@ -46,9 +46,9 @@
   --color-mist: var(--mist);
   --color-hairline: var(--hairline);
 
-  --font-display: var(--font-bricolage);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --font-display: "Bricolage Grotesque Variable";
+  --font-sans: "Geist Variable";
+  --font-mono: "Geist Mono Variable";
 }
 
 html {

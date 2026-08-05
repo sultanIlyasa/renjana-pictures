@@ -69,6 +69,53 @@
   background-size: 140px 140px;
 }
 
+.soundToggle {
+  position: absolute;
+  top: clamp(5.8rem, 12vh, 7.5rem);
+  right: clamp(1.5rem, 5vw, 5rem);
+  z-index: calc(var(--z-content) + 1);
+  display: grid;
+  width: 2.75rem;
+  height: 2.75rem;
+  place-items: center;
+  border: 1px solid color-mix(in oklch, var(--cream) 22%, var(--hairline));
+  border-radius: 50%;
+  background: rgba(10, 14, 13, 0.52);
+  color: var(--cream);
+  cursor: pointer;
+  backdrop-filter: blur(12px);
+  transition:
+    background var(--dur-state) var(--ease-out-quart),
+    border-color var(--dur-state) var(--ease-out-quart),
+    color var(--dur-state) var(--ease-out-quart);
+}
+
+.soundToggle svg {
+  width: 1.15rem;
+  height: 1.15rem;
+  fill: currentColor;
+}
+
+.soundToggle svg path + path {
+  fill: none;
+  stroke: currentColor;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-width: 1.7;
+}
+
+.soundToggle:hover,
+.soundToggle[data-muted="false"] {
+  border-color: var(--emerald);
+  background: var(--emerald);
+  color: var(--void);
+}
+
+.soundToggle:focus-visible {
+  outline: 2px solid var(--cream);
+  outline-offset: 3px;
+}
+
 /* ---- Content ---- */
 .content {
   position: relative;
@@ -336,6 +383,11 @@
 }
 
 @media (max-width: 760px) {
+  .soundToggle {
+    top: 1rem;
+    right: 1rem;
+  }
+
   .content {
     gap: clamp(1.5rem, 5vh, 2.75rem);
     padding: clamp(1rem, 4vw, 1.5rem);

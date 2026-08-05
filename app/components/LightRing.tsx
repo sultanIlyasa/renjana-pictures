@@ -10,6 +10,9 @@ import styles from "./LightRing.module.css";
 
 gsap.registerPlugin(ScrollTrigger);
 
+const LOGO_SRC = "/brand/renjana-pictures.png";
+const STATIC_SCENE_PROGRESS = 1.125 / 2.15;
+
 const useIsomorphicLayoutEffect =
   typeof window !== "undefined" ? useLayoutEffect : useEffect;
 
@@ -93,7 +96,7 @@ export default function LightRing({
     const canvas = canvasRef.current;
     if (!section || !canvas) return;
 
-    const scene = createScrubScene(canvas);
+    const scene = createScrubScene(canvas, { logoSrc: LOGO_SRC });
     const onResize = () => {
       scene.resize();
       ScrollTrigger.refresh();
@@ -102,31 +105,40 @@ export default function LightRing({
 
     const ctx = gsap.context(() => {
       const mm = gsap.matchMedia();
+      const rail = railRef.current;
+      const railFill = railFillRef.current;
+      const services = gsap.utils.toArray<HTMLElement>("[data-ring-service]");
+
+      const setActiveService = (progress: number) => {
+        const index = Math.min(
+          services.length - 1,
+          Math.max(0, Math.floor(progress * services.length)),
+        );
+        services.forEach((service, serviceIndex) => {
+          service.dataset.active = serviceIndex === index ? "true" : "false";
+        });
+        if (index === activeServiceRef.current) return;
+        activeServiceRef.current = index;
+        setActiveServiceIndex(index);
+      };
+
+      const updateScene = (progress: number) => {
+        scene.render(progress);
+        section.style.setProperty("--ring-progress", progress.toFixed(4));
+        if (railFill) {
+          railFill.style.transform = `scaleX(${progress.toFixed(4)})`;
+        }
+        setActiveService(progress);
+      };
+
+      if (rail) rail.style.opacity = "";
+      if (railFill) railFill.style.transform = "scaleX(0)";
+      setActiveService(0);
 
       mm.add(
         "(prefers-reduced-motion: no-preference) and (min-width: 821px)",
         () => {
           section.dataset.motion = "on";
-          const rail = railRef.current;
-          const railFill = railFillRef.current;
-          const services = gsap.utils.toArray<HTMLElement>("[data-ring-service]");
-
-          const setActiveService = (progress: number) => {
-            const index = Math.min(
-              services.length - 1,
-              Math.max(0, Math.floor(progress * services.length)),
-            );
-            if (index === activeServiceRef.current) return;
-            activeServiceRef.current = index;
-            setActiveServiceIndex(index);
-            services.forEach((service, i) => {
-              service.dataset.active = i === index ? "true" : "false";
-            });
-          };
-
-          if (rail) rail.style.opacity = "";
-          if (railFill) railFill.style.transform = "scaleY(0)";
-          setActiveService(0);
 
           /*
            * Pinned service orbit:
@@ -145,15 +157,7 @@ export default function LightRing({
             anticipatePin: 1,
             invalidateOnRefresh: true,
             onUpdate: (self) => {
-              scene.render(self.progress);
-              section.style.setProperty(
-                "--ring-progress",
-                self.progress.toFixed(4),
-              );
-              if (railFill) {
-                railFill.style.transform = `scaleY(${self.progress.toFixed(4)})`;
-              }
-              setActiveService(self.progress);
+              updateScene(self.progress);
             },
           });
 
@@ -172,18 +176,25 @@ export default function LightRing({
         "(prefers-reduced-motion: no-preference) and (max-width: 820px)",
         () => {
           section.dataset.motion = "mobile";
-          scene.render(0.58);
-          if (railRef.current) railRef.current.style.opacity = "0";
+          const trigger = ScrollTrigger.create({
+            trigger: section,
+            start: "top bottom",
+            end: "bottom top",
+            scrub: 0.45,
+            invalidateOnRefresh: true,
+            onUpdate: (self) => updateScene(self.progress),
+          });
+
           return () => {
+            trigger.kill();
             delete section.dataset.motion;
-            if (railRef.current) railRef.current.style.opacity = "";
           };
         },
       );
 
       mm.add("(prefers-reduced-motion: reduce)", () => {
         section.dataset.motion = "reduced";
-        scene.render(0.58);
+        scene.render(STATIC_SCENE_PROGRESS);
         if (railRef.current) railRef.current.style.opacity = "0";
         return () => {
           delete section.dataset.motion;
@@ -215,8 +226,10 @@ export default function LightRing({
 
       <div className={styles.captions}>
         <article key={activeCaption.num} className={styles.caption}>
-          <span className={styles.capNum}>{activeCaption.num}</span>
-          <h2 className={styles.capTxt}>{activeCaption.title}</h2>
+          <div className={styles.captionLead}>
+            <span className={styles.capNum}>{activeCaption.num}</span>
+            <h2 className={styles.capTxt}>{activeCaption.title}</h2>
+          </div>
           <p className={styles.capBody}>{activeCaption.body}</p>
         </article>
       </div>

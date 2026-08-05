@@ -1,8 +1,9 @@
 "use client";
 
-import { Fragment, useEffect, useLayoutEffect, useRef } from "react";
+import { Fragment, useEffect, useLayoutEffect, useRef, useState } from "react";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
+import Hls from "hls.js";
 import type { HeroContent, HeroCopy, HeroVideo } from "../data/siteContent";
 import { scrollTo } from "../lib/smoothScroll";
 import { LANGUAGE_LABELS, type SiteLanguage } from "./content";
@@ -14,19 +15,25 @@ const useIsomorphicLayoutEffect =
   typeof window !== "undefined" ? useLayoutEffect : useEffect;
 
 /*
- * Hero background: full-bleed autoplay showreel.
- * Store the final 4-minute Renjana master at public/hero/renjana-showreel.mp4.
- * The second source keeps the demo alive until that client file is present.
+ * Hero background: full-bleed Cloudflare Stream HLS showreel.
+ * Stream stays outside the Worker asset bundle; the small local clip is only a
+ * development and playback-error fallback.
  */
-const HERO_VIDEO = "/hero/renjana-showreel.mp4";
 const HERO_FALLBACK_VIDEO = "/work/sunset.mp4";
 const HERO_POSTER = "/work/sunset.jpg";
+const DEFAULT_HERO_VIDEO =
+  "https://media.sarikayalabs.com/renjana-showreel-flaten.mp4";
+const HERO_REMOTE_VIDEO =
+  process.env.NEXT_PUBLIC_CLOUDFLARE_STREAM_HLS_URL?.trim() ||
+  process.env.NEXT_PUBLIC_HERO_VIDEO_URL?.trim() ||
+  DEFAULT_HERO_VIDEO;
+const HERO_REMOTE_IS_HLS = /\.m3u8(?:$|\?)/i.test(HERO_REMOTE_VIDEO);
 
 const HERO_MEDIA: HeroVideo = {
-  src: HERO_VIDEO,
-  fallbackSrc: HERO_FALLBACK_VIDEO,
+  src: HERO_REMOTE_VIDEO || HERO_FALLBACK_VIDEO,
+  fallbackSrc: HERO_REMOTE_VIDEO ? HERO_FALLBACK_VIDEO : undefined,
   poster: HERO_POSTER,
-  type: "video/mp4",
+  type: HERO_REMOTE_IS_HLS ? "application/vnd.apple.mpegurl" : "video/mp4",
   fallbackType: "video/mp4",
 };
 
@@ -85,6 +92,7 @@ export default function Hero({
   const rootRef = useRef<HTMLElement>(null);
   const contentRef = useRef<HTMLDivElement>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
+  const [isMuted, setIsMuted] = useState(true);
   const { video, ...copyOverrides } = content ?? {};
   const customHeadline = content?.headline?.filter((word) => word.text.trim());
   const copy = {
@@ -101,6 +109,9 @@ export default function Hero({
     if (!video) return;
 
     const reduce = window.matchMedia("(prefers-reduced-motion: reduce)");
+    let hls: Hls | undefined;
+    let usingFallback = false;
+
     const syncPlayback = () => {
       if (reduce.matches) {
         video.pause();
@@ -109,10 +120,56 @@ export default function Hero({
       video.play().catch(() => {});
     };
 
-    syncPlayback();
+    const syncMutedState = () => setIsMuted(video.muted);
+
+    const loadFallback = () => {
+      if (usingFallback || !media.fallbackSrc) return;
+      usingFallback = true;
+      hls?.destroy();
+      hls = undefined;
+      video.src = media.fallbackSrc;
+      video.load();
+      syncPlayback();
+    };
+
+    video.muted = true;
+    syncMutedState();
+
+    if (media.type === "application/vnd.apple.mpegurl") {
+      if (video.canPlayType("application/vnd.apple.mpegurl")) {
+        video.src = media.src;
+        video.load();
+        syncPlayback();
+      } else if (Hls.isSupported()) {
+        hls = new Hls({
+          enableWorker: true,
+          lowLatencyMode: false,
+          backBufferLength: 30,
+        });
+        hls.attachMedia(video);
+        hls.on(Hls.Events.MEDIA_ATTACHED, () => hls?.loadSource(media.src));
+        hls.on(Hls.Events.MANIFEST_PARSED, syncPlayback);
+        hls.on(Hls.Events.ERROR, (_event, data) => {
+          if (data.fatal) loadFallback();
+        });
+      } else {
+        loadFallback();
+      }
+    } else {
+      video.src = media.src;
+      video.load();
+      syncPlayback();
+    }
+
     reduce.addEventListener("change", syncPlayback);
-    return () => reduce.removeEventListener("change", syncPlayback);
-  }, []);
+    video.addEventListener("volumechange", syncMutedState);
+
+    return () => {
+      reduce.removeEventListener("change", syncPlayback);
+      video.removeEventListener("volumechange", syncMutedState);
+      hls?.destroy();
+    };
+  }, [media.fallbackSrc, media.src, media.type]);
 
   useIsomorphicLayoutEffect(() => {
     const root = rootRef.current;
@@ -212,6 +269,19 @@ export default function Hero({
 
   const handleScrollCue = () => scrollTo("#orbit-services");
 
+  const handleSoundToggle = async () => {
+    const video = videoRef.current;
+    if (!video) return;
+
+    video.muted = !video.muted;
+    try {
+      await video.play();
+    } catch {
+      video.muted = true;
+    }
+    setIsMuted(video.muted);
+  };
+
   const handleAnchor =
     (id: string) => (e: React.MouseEvent<HTMLAnchorElement>) => {
       const el = document.getElementById(id);
@@ -231,19 +301,45 @@ export default function Hero({
           playsInline
           autoPlay
           loop
-          preload="auto"
-        >
-          <source src={media.src} type={media.type ?? "video/mp4"} />
-          {media.fallbackSrc ? (
-            <source
-              src={media.fallbackSrc}
-              type={media.fallbackType ?? "video/mp4"}
-            />
-          ) : null}
-        </video>
+          preload="metadata"
+        />
       </div>
       <div className={`${styles.scrim} js-hero-scrim`} aria-hidden="true" />
       <div className={styles.grain} aria-hidden="true" />
+
+      <button
+        type="button"
+        className={`${styles.soundToggle} js-hero-tool`}
+        data-muted={isMuted ? "true" : "false"}
+        onClick={handleSoundToggle}
+        aria-label={
+          language === "id"
+            ? isMuted
+              ? "Nyalakan suara showreel"
+              : "Matikan suara showreel"
+            : isMuted
+              ? "Turn on showreel sound"
+              : "Mute showreel"
+        }
+        title={
+          language === "id"
+            ? isMuted
+              ? "Nyalakan suara"
+              : "Matikan suara"
+            : isMuted
+              ? "Turn sound on"
+              : "Mute"
+        }
+      >
+        <svg viewBox="0 0 24 24" aria-hidden="true">
+          <path d="M4 9v6h4l5 4V5L8 9H4Z" />
+          {isMuted ? (
+            <path d="m17 9 4 4m0-4-4 4" />
+          ) : (
+            <path d="M16 8.5a5 5 0 0 1 0 7M18.5 6a8.5 8.5 0 0 1 0 12" />
+          )}
+        </svg>
+      </button>
 
       <div ref={contentRef} className={styles.content}>
         <div className={styles.topline}>

@@ -30,6 +30,12 @@ const CONTACT_DETAILS: ContactDetails = {
   mapsUrl: "https://maps.app.goo.gl/ruMos1gTXsFq9Wx67",
 };
 
+const CLIENT_LOGOS = [
+  { name: "PLN", detail: { id: "Energi", en: "Energy" } },
+  { name: "KEMENSOS", detail: { id: "Sosial", en: "Social" } },
+  { name: "POSIND", detail: { id: "Logistik", en: "Logistics" } },
+] as const;
+
 const STORY_COPY: Record<SiteLanguage, StoryCopy> = {
   id: {
     servicesCredit: "Bukan vendor produksi",
@@ -722,14 +728,27 @@ export default function StorySections({
   const reelJumpRef = useRef(true);
   const articleJumpRef = useRef(true);
   const [formState, setFormState] = useState<"idle" | "sending" | "sent">("idle");
-  const copy = {
-    ...getStoryCopy(language, content),
+  const copy = getStoryCopy(language, {
+    ...content,
     articles: ARTICLES_BY_LANGUAGE[language],
-  };
+  });
   const contactDetails = {
     ...CONTACT_DETAILS,
     ...content?.contactDetails,
   };
+  const flipHint = language === "id" ? "Lihat detail" : "View details";
+  const clientLogoCopy =
+    language === "id"
+      ? {
+          credit: "Kolaborasi terpilih",
+          title: "Nama yang pernah hadir di dalam frame.",
+          aria: "Klien Renjana: PLN, Kementerian Sosial, dan PosIND",
+        }
+      : {
+          credit: "Selected collaborations",
+          title: "Names that have shared the frame.",
+          aria: "Renjana clients: PLN, Ministry of Social Affairs, and PosIND",
+        };
   const reelCount = copy.reels.length;
   const articleCount = copy.articles.length;
   const [reelPosition, setReelPosition] = useState(() =>
@@ -951,20 +970,33 @@ export default function StorySections({
                 key={service.label}
                 className={styles.serviceCard}
                 data-service-card
+                tabIndex={0}
               >
-                <span className={styles.serviceIndex}>
-                  {String(index + 1).padStart(2, "0")}
-                </span>
-                <div>
-                  <span className={styles.serviceLabel}>{service.label}</span>
-                  <h3>{service.title}</h3>
-                  <p>{service.body}</p>
+                <div className={styles.flipInner}>
+                  <div className={`${styles.flipFace} ${styles.flipFront}`}>
+                    <span className={styles.serviceIndex}>
+                      {String(index + 1).padStart(2, "0")}
+                    </span>
+                    <div>
+                      <span className={styles.serviceLabel}>{service.label}</span>
+                      <h3>{service.title}</h3>
+                    </div>
+                    <span className={styles.flipCue} aria-hidden="true">
+                      <svg viewBox="0 0 24 24" aria-hidden="true">
+                        <path d="M3 12a9 9 0 1 0 3-6.7M3 4v4h4" />
+                      </svg>
+                      {flipHint}
+                    </span>
+                  </div>
+                  <div className={`${styles.flipFace} ${styles.flipBack}`}>
+                    <p className={styles.flipBody}>{service.body}</p>
+                    <ul>
+                      {service.details.map((detail) => (
+                        <li key={detail}>{detail}</li>
+                      ))}
+                    </ul>
+                  </div>
                 </div>
-                <ul>
-                  {service.details.map((detail) => (
-                    <li key={detail}>{detail}</li>
-                  ))}
-                </ul>
               </article>
             ))}
           </div>
@@ -1177,6 +1209,32 @@ export default function StorySections({
       </section>
 
       {statsSection}
+
+      <section
+        className={styles.clientLogos}
+        aria-labelledby="client-logos-title"
+      >
+        <div className={styles.clientLogoHeader}>
+          <span className={styles.credit}>{clientLogoCopy.credit}</span>
+          <h2 id="client-logos-title">{clientLogoCopy.title}</h2>
+        </div>
+
+        <p className={styles.visuallyHidden}>{clientLogoCopy.aria}</p>
+        <div className={styles.clientLogoViewport} aria-hidden="true">
+          <div className={styles.clientLogoTrack}>
+            {[0, 1].map((groupIndex) => (
+              <div className={styles.clientLogoGroup} key={groupIndex}>
+                {CLIENT_LOGOS.map((client) => (
+                  <div className={styles.clientLogo} key={client.name}>
+                    <span>{client.name}</span>
+                    <small>{client.detail[language]}</small>
+                  </div>
+                ))}
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
 
       <section id="contact" className={styles.contact} aria-labelledby="contact-title">
         <div className={styles.contactInner}>

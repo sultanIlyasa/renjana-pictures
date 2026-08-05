@@ -1,19 +1,14 @@
 # Hero Video Asset
 
-Put the final hero banner video here:
+The production showreel is hosted by Cloudflare Stream and loaded from its HLS
+manifest. Do not place a hero master in this directory: files in `public` become
+Worker static assets and Cloudflare limits each static asset to 25 MiB.
+
+Set the public HLS manifest at build time:
 
 ```text
-public/hero/renjana-showreel.mp4
+NEXT_PUBLIC_CLOUDFLARE_STREAM_HLS_URL=https://customer-<CODE>.cloudflarestream.com/<UID>/manifest/video.m3u8
 ```
 
-It will be available in the app as:
-
-```text
-/hero/renjana-showreel.mp4
-```
-
-Recommended export:
-- MP4/H.264, muted-safe visual edit
-- 1920x1080 or 2560x1440
-- Web-optimized bitrate, ideally under 60-90 MB for a 4 minute loop
-- Keep the first frame strong because it is also the perceived poster frame while loading
+`public/work/sunset.mp4` remains the small development and playback-error
+fallback. Keep original masters in private archival storage.

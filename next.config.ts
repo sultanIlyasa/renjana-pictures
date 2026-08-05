@@ -1,7 +1,7 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  allowedDevOrigins: ["*.ngrok-free.app", "*.ngrok.app", "*.ngrok.io"],
+  allowedDevOrigins: ["*.trycloudflare.com"],
   images: {
     remotePatterns: [new URL("https://cdn.sanity.io/images/**")],
   },

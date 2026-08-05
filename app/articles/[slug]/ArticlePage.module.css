@@ -74,7 +74,7 @@
   max-width: 12ch;
   margin: 0;
   font-family: var(--font-display), sans-serif;
-  font-size: clamp(3.1rem, 6.2vw, 4.8rem);
+  font-size: clamp(2.7rem, 5vw, 4rem);
   font-weight: 700;
   letter-spacing: 0;
   line-height: 0.95;
@@ -127,14 +127,15 @@
 }
 
 .figure {
-  margin: 4.5rem 0 0;
+  width: min(100%, 68rem);
+  margin: 4.5rem auto 0;
 }
 
 .figure img {
   display: block;
   width: 100%;
   height: auto;
-  max-height: 72svh;
+  max-height: 60svh;
   object-fit: cover;
   border: 1px solid color-mix(in oklch, var(--cream) 12%, var(--hairline));
   filter: saturate(0.86) brightness(0.88) contrast(1.08);
@@ -246,7 +247,7 @@
   }
 
   .hero h1 {
-    font-size: clamp(2.75rem, 8vw, 3.8rem);
+    font-size: clamp(2.5rem, 7vw, 3.35rem);
   }
 
   .relatedGrid {
@@ -272,7 +273,7 @@
   }
 
   .hero h1 {
-    font-size: clamp(2.25rem, 11vw, 2.8rem);
+    font-size: clamp(2rem, 9.5vw, 2.5rem);
   }
 
   .deck,

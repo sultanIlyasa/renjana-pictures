@@ -85,19 +85,51 @@
 
 .serviceCard {
   position: relative;
-  display: flex;
+  display: grid;
   min-height: clamp(28rem, 46vh, 38rem);
+  perspective: 1400px;
+}
+
+.serviceCard:focus-visible {
+  outline: 2px solid var(--emerald);
+  outline-offset: -2px;
+}
+
+/* Inner plane that rotates; both faces are stacked in one grid cell so the
+   card auto-sizes to the taller face without a fixed height. */
+.flipInner {
+  display: grid;
+  grid-template: "stack" 1fr / 1fr;
+  transform-style: preserve-3d;
+  transition: transform 0.7s var(--ease-power3);
+}
+
+.serviceCard:hover .flipInner,
+.serviceCard:focus-within .flipInner {
+  transform: rotateY(180deg);
+}
+
+.flipFace {
+  position: relative;
+  grid-area: stack;
+  display: flex;
   flex-direction: column;
   justify-content: space-between;
   gap: clamp(2rem, 5vw, 4rem);
   padding: clamp(1.5rem, 3vw, 2.4rem);
   overflow: hidden;
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
   background:
     linear-gradient(180deg, rgba(18, 22, 20, 0.98), rgba(10, 14, 13, 0.98)),
     var(--surface);
 }
 
-.serviceCard::before {
+.flipBack {
+  transform: rotateY(180deg);
+}
+
+.flipFace::before {
   content: "";
   position: absolute;
   inset: 0;
@@ -105,12 +137,43 @@
   background:
     linear-gradient(120deg, transparent 0 52%, rgba(253, 245, 215, 0.03) 52% 53%, transparent 53%),
     radial-gradient(80% 40% at 30% 0%, rgba(37, 158, 143, 0.11), transparent 62%);
-  opacity: 0;
-  transition: opacity 360ms var(--ease-out-quart);
+  opacity: 0.55;
 }
 
-.serviceCard:hover::before {
+/* The revealed face earns a warmer emerald wash as the payoff for flipping. */
+.flipBack::before {
+  background: radial-gradient(90% 60% at 72% 100%, rgba(37, 158, 143, 0.16), transparent 64%);
   opacity: 1;
+}
+
+.flipCue {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-family: var(--font-mono), monospace;
+  font-size: 0.62rem;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--mist);
+}
+
+.flipCue svg {
+  width: 0.9rem;
+  height: 0.9rem;
+  fill: none;
+  stroke: var(--emerald);
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.flipFace .flipBody {
+  position: relative;
+  margin: 0;
+  max-width: 34ch;
+  font-size: 1rem;
+  line-height: 1.65;
+  color: var(--mist);
 }
 
 .serviceIndex {
@@ -172,6 +235,53 @@
   letter-spacing: 0.12em;
   text-transform: uppercase;
   color: color-mix(in oklch, var(--cream) 78%, var(--mist));
+}
+
+/* Reduced motion: no 3D rotation — crossfade the stacked faces instead. */
+@media (prefers-reduced-motion: reduce) {
+  .flipInner {
+    transform: none !important;
+  }
+  .flipFace {
+    backface-visibility: visible;
+    -webkit-backface-visibility: visible;
+    transition: opacity 0.35s ease;
+  }
+  .flipBack {
+    transform: none;
+    opacity: 0;
+  }
+  .serviceCard:hover .flipBack,
+  .serviceCard:focus-within .flipBack {
+    opacity: 1;
+  }
+  .serviceCard:hover .flipFront,
+  .serviceCard:focus-within .flipFront {
+    opacity: 0;
+  }
+}
+
+/* No hover (touch): can't flip — show both faces stacked so nothing is hidden. */
+@media (hover: none) {
+  .serviceCard {
+    display: block;
+  }
+  .flipInner {
+    display: flex;
+    flex-direction: column;
+    transform: none !important;
+  }
+  .flipFace {
+    grid-area: auto;
+    backface-visibility: visible;
+    -webkit-backface-visibility: visible;
+  }
+  .flipBack {
+    transform: none;
+  }
+  .flipCue {
+    display: none;
+  }
 }
 
 .horizontal {
@@ -436,6 +546,105 @@
   line-height: 1.55;
   text-transform: uppercase;
   color: var(--mist);
+}
+
+.clientLogos {
+  overflow: hidden;
+  padding-block: clamp(3.5rem, 8vh, 5.5rem);
+  border-block: 1px solid var(--hairline);
+  background: #090c0b;
+}
+
+.clientLogoHeader {
+  display: grid;
+  grid-template-columns: minmax(0, 0.72fr) minmax(0, 1fr);
+  gap: clamp(2rem, 6vw, 6rem);
+  align-items: end;
+  width: 100%;
+  max-width: 1480px;
+  margin: 0 auto clamp(2.5rem, 5vw, 4rem);
+  padding-inline: clamp(1.5rem, 5vw, 5rem);
+}
+
+.clientLogoHeader .credit {
+  margin-bottom: 0;
+}
+
+.clientLogoHeader h2 {
+  max-width: 22ch;
+  margin: 0;
+  font-family: var(--font-display), sans-serif;
+  font-size: clamp(1.6rem, 3vw, 2.8rem);
+  font-weight: 700;
+  line-height: 1;
+  letter-spacing: 0;
+  color: var(--cream);
+  text-wrap: balance;
+}
+
+.clientLogoViewport {
+  width: 100%;
+  overflow: hidden;
+  border-block: 1px solid color-mix(in oklch, var(--cream) 10%, var(--hairline));
+}
+
+.clientLogoTrack {
+  display: flex;
+  width: max-content;
+  will-change: transform;
+  animation: clientLogoLoop 24s linear infinite;
+}
+
+.clientLogoGroup {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  flex: 0 0 max(100vw, 48rem);
+}
+
+.clientLogo {
+  display: flex;
+  align-items: baseline;
+  justify-content: center;
+  gap: 0.75rem;
+  min-width: 0;
+  padding: clamp(1.5rem, 3vw, 2.35rem) 1.25rem;
+  border-left: 1px solid var(--hairline);
+  color: color-mix(in oklch, var(--cream) 82%, var(--mist));
+  white-space: nowrap;
+}
+
+.clientLogo span {
+  font-family: var(--font-display), sans-serif;
+  font-size: clamp(1.45rem, 3vw, 2.8rem);
+  font-weight: 800;
+  line-height: 1;
+  letter-spacing: 0;
+}
+
+.clientLogo small {
+  font-family: var(--font-mono), monospace;
+  font-size: 0.6rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--emerald);
+}
+
+.visuallyHidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+@keyframes clientLogoLoop {
+  to {
+    transform: translate3d(-50%, 0, 0);
+  }
 }
 
 .quote {
@@ -943,6 +1152,7 @@
 @media (max-width: 1060px) {
   .serviceIntro,
   .statsHeader,
+  .clientLogoHeader,
   .testimonialHeader,
   .contactInner {
     grid-template-columns: 1fr;
@@ -1038,6 +1248,27 @@
     min-height: 11rem;
   }
 
+  .clientLogos {
+    padding-block: 3.8rem;
+  }
+
+  .clientLogoHeader {
+    margin-bottom: 2.25rem;
+  }
+
+  .clientLogo {
+    gap: 0.45rem;
+    padding-inline: 0.9rem;
+  }
+
+  .clientLogo span {
+    font-size: 1.35rem;
+  }
+
+  .clientLogo small {
+    font-size: 0.52rem;
+  }
+
   .quote p {
     max-width: 11ch;
   }
@@ -1082,6 +1313,14 @@
   .reelTrack,
   .articleTrack {
     transition: none;
+  }
+
+  .clientLogoTrack {
+    animation: none;
+  }
+
+  .clientLogoGroup + .clientLogoGroup {
+    display: none;
   }
 
   .serviceCard,
