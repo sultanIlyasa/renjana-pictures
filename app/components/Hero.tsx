@@ -44,11 +44,12 @@ const HERO_COPY: Record<SiteLanguage, HeroCopy> = {
     credit: "Siaran - Film - Iklan",
     videoMeta: "Showreel layar penuh / autoplay",
     headline: [
-      { text: "Gambar" },
+      { text: "Cerita" },
       { text: "yang" },
-      { text: "membuat" },
-      { text: "rasa" },
-      { text: "bertahan.", accent: true },
+      { text: "terasa," },
+      { text: "visual" },
+      { text: "yang" },
+      { text: "berbicara.", accent: true },
     ],
     sub: "Rumah produksi untuk cerita yang harus terasa dulu sebelum dijelaskan.",
     primary: "Mulai proyek",
@@ -64,12 +65,11 @@ const HERO_COPY: Record<SiteLanguage, HeroCopy> = {
     videoMeta: "Full-screen showreel / autoplay",
     headline: [
       { text: "Stories" },
-      { text: "made" },
-      { text: "to" },
-      { text: "stay" },
-      { text: "in" },
-      { text: "the" },
-      { text: "frame.", accent: true },
+      { text: "you" },
+      { text: "feel," },
+      { text: "visuals" },
+      { text: "that" },
+      { text: "speak.", accent: true },
     ],
     sub: "A production house for work that should be felt before it is explained.",
     primary: "Start a project",
@@ -214,7 +214,13 @@ export default function Hero({
             pin: true,
             pinSpacing: true,
             anticipatePin: 1,
-            invalidateOnRefresh: true,
+            /*
+             * No invalidateOnRefresh: every tween value here is a constant, and
+             * the functional `end` is re-evaluated on refresh regardless. With it
+             * on, the refresh fired when the language changes re-renders this
+             * timeline from time 0 and leaves --hero-word-y stranded at 120%,
+             * hiding the headline until the hero is scrolled out and back in.
+             */
           },
         });
 

@@ -39,26 +39,26 @@ const CLIENT_LOGOS = [
 const STORY_COPY: Record<SiteLanguage, StoryCopy> = {
   id: {
     servicesCredit: "Bukan vendor produksi",
-    servicesTitle: "Tiga cara kerja, satu rasa yang sama.",
+    servicesTitle: "Setiap Karya Punya Cara untuk Bercerita.",
     servicesLead:
-      "Renjana membantu brief bergerak dari ide, pengambilan gambar, sampai master final tanpa kehilangan alasan emosionalnya.",
+      "Kami menemukan pendekatan terbaik untuk membawa ide, pesan, dan emosi menjadi pengalaman visual yang utuh.",
     services: [
       {
         label: "Siaran",
-        title: "Sinyal tetap jernih saat ruangan bergerak cepat.",
-        body: "Liputan live, peluncuran, interview room, multi-camera coverage, dan edit siaran yang disiapkan untuk tempo lapangan.",
+        title: "Kami Membuat Momen Tetap Terhubung.",
+        body: "Dari event hingga live broadcast, kami menangani kebutuhan produksi siaran agar pesan tersampaikan tanpa jeda.",
         details: ["Multi-kamera", "Event film", "Paket siaran"],
       },
       {
         label: "Film",
-        title: "Visual yang memberi ruang untuk rasa.",
-        body: "Brand film, campaign narrative, product reel, dan treatment visual yang dibentuk sejak konsep, bukan hanya saat edit.",
+        title: "Yang Ingin Diceritakan, Kami Hidupkan.",
+        body: "Mengolah fakta, ide, dan pengalaman menjadi cerita visual yang memiliki karakter.",
         details: ["Treatment", "Produksi", "Penyutradaraan"],
       },
       {
         label: "Iklan",
-        title: "Potongan komersial yang singkat tapi menempel.",
-        body: "TVC, cutdown sosial, motion graphic, sound, color, dan delivery master untuk kampanye yang harus cepat hidup.",
+        title: "Membuat Pesan Berhenti di Ingatan.",
+        body: "TVC, digital advertising, dan branded content yang menggabungkan ide kreatif dengan visual yang kuat.",
         details: ["TVC", "Cutdown", "Post production"],
       },
     ],
@@ -330,26 +330,26 @@ const STORY_COPY: Record<SiteLanguage, StoryCopy> = {
   },
   en: {
     servicesCredit: "Production house, not vendor deck",
-    servicesTitle: "Three disciplines, one directed signal.",
+    servicesTitle: "Every Piece of Work Has Its Own Way of Telling a Story.",
     servicesLead:
-      "Renjana moves from idea to shoot to final master without losing the emotional thread. The work can be broadcast, cinematic, or commercial; the standard stays the same.",
+      "We find the right approach to turn ideas, messages, and emotion into one complete visual experience.",
     services: [
       {
         label: "Broadcast",
-        title: "The signal stays clear when the room gets loud.",
-        body: "Live events, launches, interview rooms, multi-camera coverage, and broadcast-ready edits built around timing, redundancy, and clean delivery.",
+        title: "We Keep the Moment Connected.",
+        body: "From events to live broadcast, we handle the production so the message lands without a gap.",
         details: ["Multi-camera units", "Event films", "Live packages"],
       },
       {
         label: "Film",
-        title: "Images with enough atmosphere to hold attention.",
-        body: "Brand films, campaign narratives, product reels, and visual treatments shaped from concept through shoot day with a director's eye.",
+        title: "Whatever You Want to Say, We Bring It to Life.",
+        body: "Turning facts, ideas, and experience into visual stories with real character.",
         details: ["Treatment", "Production", "Direction"],
       },
       {
         label: "Advertising",
-        title: "Commercial cuts designed for memory, not noise.",
-        body: "TV spots, social-first cutdowns, motion graphics, sound, color, and delivery masters for campaigns that need to move fast.",
+        title: "Making the Message Stop in Memory.",
+        body: "TVC, digital advertising, and branded content that pair a creative idea with strong visuals.",
         details: ["TVC", "Social cutdowns", "Post production"],
       },
     ],

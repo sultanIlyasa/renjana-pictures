@@ -23,18 +23,18 @@ const SERVICES: Record<SiteLanguage, LightRingCopy> = {
     items: [
       {
         num: "01 / Siaran",
-        title: "Cerita live yang tetap rapi di banyak layar.",
-        body: "Liputan multi-kamera, paket siaran, film peluncuran, dan edit acara dengan ritme yang terjaga.",
+        title: "Menjaga momen, mendekatkan cerita.",
+        body: "Karena setiap momen punya cerita yang layak disampaikan dan dirasakan lebih dekat. Produksi multi-kamera, live coverage, hingga paket siaran yang dirancang untuk mengikuti cepatnya ritme di lapangan.",
       },
       {
         num: "02 / Film",
-        title: "Atmosfer, tempo, dan frame yang punya daya tinggal.",
-        body: "Film brand, narasi kampanye, reel produk, dan treatment visual yang matang sebelum kamera bergerak.",
+        title: "Membangun Atmosfer, Bukan Sekadar Adegan.",
+        body: "Kami memperhatikan cerita, visual, tempo, dan detail untuk menciptakan film yang memiliki karakter dan emosi.",
       },
       {
         num: "03 / Iklan",
-        title: "Karya komersial yang dibuat untuk diingat.",
-        body: "TVC, potongan sosial, motion graphic, color, sound, dan master final untuk setiap kanal tayang.",
+        title: "Sekilas Dilihat, Lama Diingat.",
+        body: "Kami mengemas pesan brand menjadi visual yang menarik, relevan, dan memiliki daya ingat.",
       },
     ],
   },
@@ -44,18 +44,18 @@ const SERVICES: Record<SiteLanguage, LightRingCopy> = {
     items: [
       {
         num: "01 / Broadcast",
-        title: "Live-ready stories for every screen.",
-        body: "Multi-camera coverage, broadcast packages, launch films, and event edits built for pace and clarity.",
+        title: "Holding the Moment, Bringing the Story Closer.",
+        body: "Because every moment carries a story worth telling and worth feeling up close. Multi-camera production, live coverage, and broadcast packages built to keep up with the pace of the floor.",
       },
       {
         num: "02 / Film",
-        title: "Atmosphere, rhythm, and a frame that holds.",
-        body: "Brand films, campaign narratives, product reels, and visual treatments shaped before the camera moves.",
+        title: "Building Atmosphere, Not Just Scenes.",
+        body: "We shape story, visuals, tempo, and detail into films that carry character and emotion.",
       },
       {
         num: "03 / Advertising",
-        title: "Commercial work made to be remembered.",
-        body: "TV spots, social-first cuts, motion graphics, color, sound, and delivery masters for every channel.",
+        title: "Seen in a Glance, Remembered Far Longer.",
+        body: "We turn brand messages into visuals that are striking, relevant, and made to stay in memory.",
       },
     ],
   },
