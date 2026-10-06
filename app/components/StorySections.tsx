@@ -30,11 +30,39 @@ const CONTACT_DETAILS: ContactDetails = {
   mapsUrl: "https://maps.app.goo.gl/ruMos1gTXsFq9Wx67",
 };
 
+/*
+ * Client wall. Files live in /public/clients_logo as transparent PNGs; the CSS
+ * renders them as cream silhouettes so 22 unrelated brand palettes stay inside
+ * the screening-room system. `name` is the accessible label, not shown as text.
+ */
 const CLIENT_LOGOS = [
-  { name: "PLN", detail: { id: "Energi", en: "Energy" } },
-  { name: "KEMENSOS", detail: { id: "Sosial", en: "Social" } },
-  { name: "POSIND", detail: { id: "Logistik", en: "Logistics" } },
+  { name: "PLN", src: "/clients_logo/pln.png" },
+  // pln-mobile.png is omitted: it ships on an opaque white plate, so the
+  // silhouette treatment renders it as a solid block. Re-add it once a
+  // transparent version exists.
+  { name: "Icon Plus", src: "/clients_logo/icon-plus.png" },
+  { name: "Pertamina Patra Niaga", src: "/clients_logo/pertamina-patra-niaga.png" },
+  { name: "SKK Migas", src: "/clients_logo/skk-migas.png" },
+  { name: "Telkom Indonesia", src: "/clients_logo/telkom.png" },
+  { name: "Pos Indonesia", src: "/clients_logo/posind.png" },
+  { name: "Pospay", src: "/clients_logo/pospay.png" },
+  { name: "Bank BTN", src: "/clients_logo/btn.png" },
+  { name: "Taspen", src: "/clients_logo/taspen.png" },
+  { name: "Danantara Indonesia", src: "/clients_logo/danantara.png" },
+  { name: "Kementerian Sosial", src: "/clients_logo/kemensos.png" },
+  { name: "Kementerian Pertanian", src: "/clients_logo/kementan.png" },
+  { name: "Kementerian Perindustrian", src: "/clients_logo/kemenperin.png" },
+  { name: "Kementerian Ketenagakerjaan", src: "/clients_logo/kemnaker.png" },
+  { name: "KLHK", src: "/clients_logo/klhk.png" },
+  { name: "Badan Pangan Nasional", src: "/clients_logo/badan-pangan-nasional.png" },
+  { name: "BP2MI", src: "/clients_logo/bp2mi.png" },
+  { name: "BAZNAS", src: "/clients_logo/baznas.png" },
+  { name: "KDMP", src: "/clients_logo/kdmp.png" },
+  { name: "MSC", src: "/clients_logo/msc.png" },
+  { name: "Kota Tangerang Selatan", src: "/clients_logo/kota-tangerang-selatan.png" },
 ] as const;
+
+const CLIENT_LOGO_NAMES = CLIENT_LOGOS.map((client) => client.name).join(", ");
 
 const STORY_COPY: Record<SiteLanguage, StoryCopy> = {
   id: {
@@ -57,7 +85,7 @@ const STORY_COPY: Record<SiteLanguage, StoryCopy> = {
       },
       {
         label: "Iklan",
-        title: "Membuat Pesan Berhenti di Ingatan.",
+        title: "Membuat Pesan Terpatri di Ingatan.",
         body: "TVC, digital advertising, dan branded content yang menggabungkan ide kreatif dengan visual yang kuat.",
         details: ["TVC", "Cutdown", "Post production"],
       },
@@ -149,8 +177,8 @@ const STORY_COPY: Record<SiteLanguage, StoryCopy> = {
         body: "Placeholder motion-heavy untuk memeriksa komposisi kartu kecil.",
       },
     ],
-    statsCredit: "Tenang di produksi",
-    statsTitle: "Visualnya atmosferik. Delivery-nya tetap presisi.",
+    statsCredit: "Ruang Karya",
+    statsTitle: "Kumpulan karya yang lahir dari proses, kolaborasi, dan cerita.",
     stats: [
       { value: 48, suffix: "h", label: "arah editorial pertama" },
       { value: 12, suffix: "+", label: "format turunan kampanye" },
@@ -173,7 +201,7 @@ const STORY_COPY: Record<SiteLanguage, StoryCopy> = {
         image: "/work/rain.jpg",
         alt: "Frame hujan dari produksi iklan",
         eyebrow: "Artikel placeholder",
-        title: "Saat cuaca menjadi bahasa visual.",
+        title: "Ketika Atmosfer Menjadi Bahasa Visual.",
         body:
           "Placeholder artikel tentang ritme produksi, detail air, dan cara membuat suasana tetap terbaca di layar.",
         caption: "Caption gambar: placeholder mood hujan untuk artikel TVC.",
@@ -182,14 +210,14 @@ const STORY_COPY: Record<SiteLanguage, StoryCopy> = {
         image: "/work/water.jpg",
         alt: "Frame air dari reel produk",
         eyebrow: "Artikel placeholder",
-        title: "Detail kecil yang membuat produk terasa mahal.",
+        title: "Detail kecil yang membuat produk terasa mewah.",
         body:
           "Placeholder artikel tentang macro movement, tekstur, dan pacing untuk membuat produk terasa lebih bernilai.",
         caption: "Caption gambar: placeholder tekstur air untuk artikel produk.",
       },
     ],
     articleCredit: "Catatan produksi",
-    articleTitle: "Artikel yang terasa seperti memori dari lapangan.",
+    articleTitle: "Cerita, Insight, dan Perspektif.",
     articlePrev: "Artikel sebelumnya",
     articleNext: "Artikel berikutnya",
     articles: [
@@ -740,14 +768,14 @@ export default function StorySections({
   const clientLogoCopy =
     language === "id"
       ? {
-          credit: "Kolaborasi terpilih",
-          title: "Nama yang pernah hadir di dalam frame.",
-          aria: "Klien Renjana: PLN, Kementerian Sosial, dan PosIND",
+          credit: "JEJAK KARYA",
+          title: "Mereka yang mempercayakan ceritanya kepada kami.",
+          aria: `Klien Renjana: ${CLIENT_LOGO_NAMES}`,
         }
       : {
           credit: "Selected collaborations",
           title: "Names that have shared the frame.",
-          aria: "Renjana clients: PLN, Ministry of Social Affairs, and PosIND",
+          aria: `Renjana clients: ${CLIENT_LOGO_NAMES}`,
         };
   const reelCount = copy.reels.length;
   const articleCount = copy.articles.length;
@@ -1225,9 +1253,12 @@ export default function StorySections({
             {[0, 1].map((groupIndex) => (
               <div className={styles.clientLogoGroup} key={groupIndex}>
                 {CLIENT_LOGOS.map((client) => (
-                  <div className={styles.clientLogo} key={client.name}>
-                    <span>{client.name}</span>
-                    <small>{client.detail[language]}</small>
+                  <div
+                    className={styles.clientLogo}
+                    key={client.name}
+                    title={client.name}
+                  >
+                    <Image src={client.src} alt="" fill sizes="200px" />
                   </div>
                 ))}
               </div>

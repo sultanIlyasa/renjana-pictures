@@ -588,45 +588,51 @@
   border-block: 1px solid color-mix(in oklch, var(--cream) 10%, var(--hairline));
 }
 
+/*
+ * Client wall. Two identical groups scroll as one track and the keyframe stops
+ * at -50%, so the seam lands exactly where the second group starts.
+ */
 .clientLogoTrack {
   display: flex;
   width: max-content;
   will-change: transform;
-  animation: clientLogoLoop 24s linear infinite;
+  animation: clientLogoLoop 90s linear infinite;
+}
+
+.clientLogoViewport:hover .clientLogoTrack {
+  animation-play-state: paused;
 }
 
 .clientLogoGroup {
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  flex: 0 0 max(100vw, 48rem);
+  display: flex;
+  flex: 0 0 auto;
 }
 
 .clientLogo {
-  display: flex;
-  align-items: baseline;
-  justify-content: center;
-  gap: 0.75rem;
-  min-width: 0;
-  padding: clamp(1.5rem, 3vw, 2.35rem) 1.25rem;
+  position: relative;
+  flex: 0 0 auto;
+  width: clamp(9rem, 13vw, 12.5rem);
+  height: clamp(5.25rem, 7.5vw, 7rem);
   border-left: 1px solid var(--hairline);
-  color: color-mix(in oklch, var(--cream) 82%, var(--mist));
-  white-space: nowrap;
 }
 
-.clientLogo span {
-  font-family: var(--font-display), sans-serif;
-  font-size: clamp(1.45rem, 3vw, 2.8rem);
-  font-weight: 800;
-  line-height: 1;
-  letter-spacing: 0;
+/*
+ * The source files are 22 unrelated brand palettes. Flattening them to cream
+ * silhouettes keeps the emerald ration intact; hover restores the real mark.
+ */
+.clientLogo img {
+  padding: clamp(1.1rem, 2vw, 1.6rem) clamp(1.35rem, 2.4vw, 2rem);
+  object-fit: contain;
+  filter: grayscale(1) brightness(0) invert(1);
+  opacity: 0.52;
+  transition:
+    opacity var(--dur-state) var(--ease-out-quart),
+    filter var(--dur-state) var(--ease-out-quart);
 }
 
-.clientLogo small {
-  font-family: var(--font-mono), monospace;
-  font-size: 0.6rem;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
-  color: var(--emerald);
+.clientLogo:hover img {
+  filter: none;
+  opacity: 1;
 }
 
 .visuallyHidden {
@@ -1319,8 +1325,18 @@
     animation: none;
   }
 
+  /* No marquee to reveal the overflow, so the single group wraps instead. */
+  .clientLogoGroup {
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+
   .clientLogoGroup + .clientLogoGroup {
     display: none;
+  }
+
+  .clientLogo img {
+    transition: none;
   }
 
   .serviceCard,
