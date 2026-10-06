@@ -617,6 +617,32 @@
 }
 
 /*
+ * Hover plate. Several of these marks are dark ink on transparent, so the
+ * full-colour reveal would vanish against the void. A soft white wash fades in
+ * underneath — feathered to nothing before the tile edge so it reads as light
+ * falling on the logo, not as a white card pasted onto the band.
+ */
+.clientLogo::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(
+    ellipse 72% 64% at 50% 50%,
+    rgba(255, 255, 255, 0.95) 0%,
+    rgba(255, 255, 255, 0.9) 42%,
+    rgba(255, 255, 255, 0.52) 68%,
+    rgba(255, 255, 255, 0) 88%
+  );
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity var(--dur-state) var(--ease-out-quart);
+}
+
+.clientLogo:hover::before {
+  opacity: 1;
+}
+
+/*
  * The source files are 22 unrelated brand palettes. Flattening them to cream
  * silhouettes keeps the emerald ration intact; hover restores the real mark.
  */
@@ -1335,7 +1361,8 @@
     display: none;
   }
 
-  .clientLogo img {
+  .clientLogo img,
+  .clientLogo::before {
     transition: none;
   }
 
